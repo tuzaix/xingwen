@@ -129,9 +129,14 @@
           </p>
           <button 
             @click="handleDownloadPDF"
-            class="w-full py-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400 text-sm font-bold hover:bg-amber-500/20 transition-all"
+            :disabled="downloading"
+            class="w-full py-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400 text-sm font-bold hover:bg-amber-500/20 transition-all flex items-center justify-center gap-2"
           >
-            下载详细 PDF 报告
+            <svg v-if="downloading" class="animate-spin h-4 w-4 text-amber-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <span>{{ downloading ? '正在准备 PDF...' : '下载详细 PDF 报告' }}</span>
           </button>
         </div>
       </div>
@@ -189,6 +194,7 @@ const userStore = useUserStore()
 const reportStore = useReportStore()
 
 const loading = ref(true)
+const downloading = ref(false)
 const report = ref<any>(null)
 const error = ref('')
 const currentProgress = ref(0)
@@ -203,23 +209,37 @@ const totalWordCount = computed(() => {
 })
 
 const handleDownloadPDF = async () => {
-  if (!report.value || !report.value.id) return
+  if (!report.value || !report.value.id || downloading.value) return
   
+  downloading.value = true
   try {
     const reportId = report.value.id
-    const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1'
-    const downloadUrl = `${baseUrl}/report/${reportId}/pdf`
+    const baseUrl = import.meta.env.VITE_API_BASE_URL || '/api/v1'
     
-    // 创建一个隐藏的 a 标签并触发下载
+    // 使用 axios 下载 blob，这样可以捕获开始和结束
+    const response = await axios({
+      url: `${baseUrl}/report/${reportId}/pdf`,
+      method: 'GET',
+      responseType: 'blob'
+    })
+    
+    // 创建 blob URL 并触发下载
+    const blob = new Blob([response.data], { type: 'application/pdf' })
+    const url = window.URL.createObjectURL(blob)
     const link = document.createElement('a')
-    link.href = downloadUrl
+    link.href = url
     link.setAttribute('download', `星纹报告_${userStore.name}.pdf`)
     document.body.appendChild(link)
     link.click()
+    
+    // 清理
     document.body.removeChild(link)
+    window.URL.revokeObjectURL(url)
   } catch (err) {
     console.error('PDF Download Error:', err)
     alert('下载 PDF 失败，请稍后重试。')
+  } finally {
+    downloading.value = false
   }
 }
 
