@@ -150,7 +150,8 @@ User=root
 Group=root
 WorkingDirectory=/var/www/zhangjing/backend
 Environment="PATH=/var/www/zhangjing/backend/venv/bin"
-ExecStart=/var/www/zhangjing/backend/venv/bin/gunicorn -w 4 -k uvicorn.workers.UvicornWorker app.main:app --bind 0.0.0.0:8000
+# 确保在运行前激活环境并安装依赖：/var/www/zhangjing/backend/venv/bin/pip install -r requirements.txt
+ExecStart=/var/www/zhangjing/backend/venv/bin/gunicorn -w 4 -k uvicorn.workers.UvicornWorker app.main:app --bind 0.0.0.0:8641
 
 [Install]
 WantedBy=multi-user.target
@@ -167,21 +168,34 @@ server {
 
     # H5 用户端
     location / {
-        root /var/www/zhangjing/frontend/h5/dist;
+        # 重要：请确保此路径与服务器上 index.html 的实际路径完全一致
+        root /var/www/xingwen/frontend/h5/dist; 
         index index.html;
+        # 修复死循环：如果找不到文件，尝试返回 index.html，如果还找不到则直接返回 404
         try_files $uri $uri/ /index.html;
+    }
+
+    # 为 index.html 单独设置一个 location，防止内部重定向循环
+    location = /index.html {
+        root /var/www/xingwen/frontend/h5/dist;
     }
 
     # Admin 管理后台
     location /admin {
-        alias /var/www/zhangjing/frontend/admin/dist;
+        alias /var/www/xingwen/frontend/admin/dist/;
         index index.html;
         try_files $uri $uri/ /admin/index.html;
     }
 
+    # 用户上传的静态资源
+    location /uploads {
+        alias /var/www/xingwen/backend/api/uploads;
+        expires 30d;
+    }
+
     # 后端 API 反向代理
     location /api {
-        proxy_pass http://127.0.0.1:8000;
+        proxy_pass http://127.0.0.1:8641;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -220,4 +234,5 @@ systemctl restart nginx
 1. **字体显示为方块**: 检查后端 `app/assets/fonts` 是否缺失字体文件，或在 `.env` 中指定正确的路径。
 2. **API 404 错误**: 检查前端 `.env` 中的 `VITE_API_BASE_URL` 是否指向了正确的后端地址及端口。
 3. **数据库连接失败**: 确保 MySQL 允许远程连接或主机地址正确，且已通过 `init_project.py` 创建了数据库。
+4. **ModuleNotFoundError: No module named 'jwt'**: 确保执行了 `pip install -r requirements.txt`。如果使用了自定义路径的虚拟环境，请确保使用该路径下的 `pip` 进行安装。
 
