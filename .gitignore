@@ -65,3 +65,5 @@ backend/api/app/assets/generated/
 
 backend/api/.env 
 frontend/.env
+
+backend/api/uploads/

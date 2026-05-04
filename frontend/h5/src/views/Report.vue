@@ -69,7 +69,7 @@
               深度解析已就绪
             </h4>
             <p class="text-[11px] text-slate-300 leading-relaxed">
-              当前展示为章节精要。完整 <span class="text-amber-400 font-bold underline underline-offset-4 decoration-amber-500/50">PDF 深度解析报告</span> 已经为您准备好，请滑动至页面 <span class="text-amber-400 font-bold underline underline-offset-4 decoration-amber-500/50">底部</span> 免费下载。
+              完整 <span class="text-amber-400 font-bold underline underline-offset-4 decoration-amber-500/50">PDF 深度解析报告</span> 请滑动至页面 <span class="text-amber-400 font-bold underline underline-offset-4 decoration-amber-500/50">底部</span> 下载。
             </p>
           </div>
         </div>

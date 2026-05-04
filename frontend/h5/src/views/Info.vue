@@ -25,43 +25,50 @@
       </div>
 
       <div class="space-y-8">
-        <!-- 1. 姓名 -->
-        <div class="form-item">
-          <label class="block text-xs font-bold text-amber-500/50 mb-3 uppercase tracking-widest">您的姓名</label>
-          <input
-            v-model="form.name"
-            type="text"
-            placeholder="请输入姓名"
-            class="w-full bg-slate-800/50 border border-slate-700 rounded-xl py-4 px-5 focus:border-amber-500/50 outline-none transition-all text-white placeholder:text-slate-600"
-          />
-        </div>
+        <!-- 1 & 2. 姓名与性别 (在一行展示) -->
+        <div class="grid grid-cols-5 gap-4">
+          <div class="col-span-3 form-item">
+            <label class="block text-xs font-bold text-amber-500/50 mb-3 uppercase tracking-widest">
+              您的姓名 <span class="text-amber-500">*</span>
+            </label>
+            <input
+              v-model="form.name"
+              type="text"
+              placeholder="请输入姓名"
+              class="w-full bg-slate-800/50 border border-slate-700 rounded-xl py-4 px-5 focus:border-amber-500/50 outline-none transition-all text-white placeholder:text-slate-600"
+            />
+          </div>
 
-        <!-- 2. 性别 -->
-        <div class="form-item">
-          <label class="block text-xs font-bold text-amber-500/50 mb-3 uppercase tracking-widest">您的性别</label>
-          <div class="flex gap-4">
-            <button
-              v-for="g in ['男', '女']"
-              :key="g"
-              @click="form.gender = g"
-              class="flex-1 py-4 rounded-xl border transition-all font-bold"
-              :class="form.gender === g ? 'border-amber-500 bg-amber-500/10 text-amber-400' : 'border-slate-700 bg-slate-800/50 text-slate-500'"
-            >
-              {{ g }}
-            </button>
+          <div class="col-span-2 form-item">
+            <label class="block text-xs font-bold text-amber-500/50 mb-3 uppercase tracking-widest">
+              您的性别 <span class="text-amber-500">*</span>
+            </label>
+            <div class="flex gap-2">
+              <button
+                v-for="g in ['男', '女']"
+                :key="g"
+                @click="form.gender = g"
+                class="flex-1 py-4 rounded-xl border transition-all font-bold text-sm"
+                :class="form.gender === g ? 'border-amber-500 bg-amber-500/10 text-amber-400' : 'border-slate-700 bg-slate-800/50 text-slate-500'"
+              >
+                {{ g }}
+              </button>
+            </div>
           </div>
         </div>
 
         <!-- 3. 出生日期 -->
         <div class="form-item">
           <div class="flex items-center justify-between mb-3">
-            <label class="block text-xs font-bold text-amber-500/50 uppercase tracking-widest">出生日期</label>
+            <label class="block text-xs font-bold text-amber-500/50 uppercase tracking-widest">
+              出生日期 <span class="text-amber-500">*</span>
+            </label>
             <div class="flex gap-2">
               <button
                 v-for="type in [{label: '公历', value: 'gregorian'}, {label: '农历', value: 'lunar'}]"
                 :key="type.value"
                 @click="handleCalendarTypeChange(type.value as 'gregorian' | 'lunar')"
-                class="px-3 py-1 rounded-full text-[10px] font-bold transition-all border"
+                class="px-4 py-1.5 rounded-full text-xs font-bold transition-all border"
                 :class="form.calendarType === type.value ? 'bg-amber-500 border-amber-500 text-slate-900' : 'bg-transparent border-slate-700 text-slate-500'"
               >
                 {{ type.label }}
@@ -116,39 +123,59 @@
 
         <!-- 4. 出生时间 -->
         <div class="form-item">
-          <div class="flex items-center justify-between mb-3">
-            <label class="block text-xs font-bold text-amber-500/50 uppercase tracking-widest">出生时间</label>
+          <label class="block text-xs font-bold text-amber-500/50 mb-3 uppercase tracking-widest">出生时间</label>
+          <div class="flex gap-3 h-[56px]">
+            <div v-if="form.birthTime !== ''" class="flex-1 grid grid-cols-2 gap-2 h-full">
+              <!-- Hour -->
+              <div class="relative h-full">
+                <select
+                  v-model="birthTimeState.hour"
+                  class="w-full h-full bg-slate-800/50 border border-slate-700 rounded-xl px-3 focus:border-amber-500/50 outline-none transition-all text-white appearance-none text-sm"
+                >
+                  <option v-for="h in 24" :key="h-1" :value="(h-1).toString().padStart(2, '0')">{{ (h-1).toString().padStart(2, '0') }}时</option>
+                </select>
+                <div class="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-slate-600">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                  </svg>
+                </div>
+              </div>
+              <!-- Minute -->
+              <div class="relative h-full">
+                <select
+                  v-model="birthTimeState.minute"
+                  class="w-full h-full bg-slate-800/50 border border-slate-700 rounded-xl px-3 focus:border-amber-500/50 outline-none transition-all text-white appearance-none text-sm"
+                >
+                  <option v-for="m in 60" :key="m-1" :value="(m-1).toString().padStart(2, '0')">{{ (m-1).toString().padStart(2, '0') }}分</option>
+                </select>
+                <div class="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-slate-600">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                  </svg>
+                </div>
+              </div>
+            </div>
+            <div v-else class="flex-1 h-full bg-slate-800/30 border border-dashed border-slate-700 rounded-xl px-4 text-slate-500 text-xs flex items-center gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span>时间未知，将以正午估算</span>
+            </div>
             <button
-              @click="form.birthTime = form.birthTime === '' ? '12:00' : ''"
-              class="px-3 py-1 rounded-full text-[10px] font-bold transition-all border"
+              @click="toggleBirthTime"
+              class="px-6 h-full rounded-xl font-bold transition-all border shrink-0 text-sm"
               :class="form.birthTime === '' ? 'bg-amber-500 border-amber-500 text-slate-900' : 'bg-transparent border-slate-700 text-slate-500'"
             >
               未知
             </button>
           </div>
-          <div v-if="form.birthTime !== ''" class="relative">
-            <input
-              v-model="form.birthTime"
-              type="time"
-              class="w-full bg-slate-800/50 border border-slate-700 rounded-xl py-4 px-5 focus:border-amber-500/50 outline-none transition-all text-white appearance-none"
-            />
-            <div class="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-500">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
-          </div>
-          <div v-else class="w-full bg-slate-800/30 border border-dashed border-slate-700 rounded-xl py-4 px-5 text-slate-500 text-sm flex items-center gap-2">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            已设置为时间未知，系统将以正午时分进行估算
-          </div>
         </div>
 
         <!-- 5. 所在城市 -->
         <div class="form-item">
-          <label class="block text-xs font-bold text-amber-500/50 mb-3 uppercase tracking-widest">当前所在城市 (必选，有助于观相，分析结果更佳)</label>
+          <label class="block text-xs font-bold text-amber-500/50 mb-3 uppercase tracking-widest">
+            当前所在城市 <span class="text-amber-500">*</span>
+          </label>
           <div class="grid grid-cols-3 gap-2 mb-2">
             <!-- Province -->
             <div class="relative">
@@ -212,34 +239,37 @@
           </button>
         </div>
 
-        <!-- 6. 星座 -->
-        <div class="form-item">
-          <label class="block text-xs font-bold text-amber-500/50 mb-3 uppercase tracking-widest">您的星座</label>
-          <div class="relative">
-            <select
-              v-model="form.zodiac"
-              class="w-full bg-slate-800/50 border border-slate-700 rounded-xl py-4 px-5 focus:border-amber-500/50 outline-none transition-all text-white appearance-none"
-            >
-              <option value="" disabled>请选择星座</option>
-              <option v-for="z in zodiacs" :key="z" :value="z">{{ z }}</option>
-            </select>
-            <div class="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-500">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
-              </svg>
+        <!-- 6 & 7. 星座与 MBTI (在一行展示) -->
+        <div class="grid grid-cols-2 gap-4">
+          <div class="form-item">
+            <label class="block text-xs font-bold text-amber-500/50 mb-3 uppercase tracking-widest">
+              您的星座 <span class="text-amber-500">*</span>
+            </label>
+            <div class="relative">
+              <select
+                v-model="form.zodiac"
+                class="w-full bg-slate-800/50 border border-slate-700 rounded-xl py-4 px-5 focus:border-amber-500/50 outline-none transition-all text-white appearance-none text-sm"
+              >
+                <option value="" disabled>请选择星座</option>
+                <option v-for="z in zodiacs" :key="z" :value="z">{{ z }}</option>
+              </select>
+              <div class="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-500">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                </svg>
+              </div>
             </div>
           </div>
-        </div>
 
-        <!-- 7. MBTI 类型 -->
-        <div class="form-item">
-          <label class="block text-xs font-bold text-amber-500/50 mb-3 uppercase tracking-widest">MBTI 类型 (可选)</label>
-          <input
-            v-model="form.mbti"
-            type="text"
-            placeholder="例如：INTJ (可选)"
-            class="w-full bg-slate-800/50 border border-slate-700 rounded-xl py-4 px-5 focus:border-amber-500/50 outline-none transition-all text-white placeholder:text-slate-600"
-          />
+          <div class="form-item">
+            <label class="block text-xs font-bold text-amber-500/50 mb-3 uppercase tracking-widest">MBTI 类型 (可选)</label>
+            <input
+              v-model="form.mbti"
+              type="text"
+              placeholder="例如：INTJ"
+              class="w-full bg-slate-800/50 border border-slate-700 rounded-xl py-4 px-5 focus:border-amber-500/50 outline-none transition-all text-white placeholder:text-slate-600"
+            />
+          </div>
         </div>
 
         <!-- 8. 此刻最想探寻的方向 -->
@@ -377,6 +407,20 @@ const birthDate = reactive({
   day: initialDate.getDate()
 })
 
+// Birth Time State
+const birthTimeState = reactive({
+  hour: userStore.birthTime ? userStore.birthTime.split(':')[0] : '12',
+  minute: userStore.birthTime ? userStore.birthTime.split(':')[1] : '00'
+})
+
+const toggleBirthTime = () => {
+  if (form.birthTime === '') {
+    form.birthTime = `${birthTimeState.hour}:${birthTimeState.minute}`
+  } else {
+    form.birthTime = ''
+  }
+}
+
 const daysInMonth = computed(() => {
   if (form.calendarType === 'lunar') {
     // In lunar-javascript, a lunar month has either 29 or 30 days.
@@ -482,6 +526,13 @@ watch(birthDate, (newVal) => {
   const d = newVal.day.toString().padStart(2, '0')
   form.birthday = `${y}-${m}-${d}`
 }, { immediate: true })
+
+// Sync birthTimeState to form.birthTime
+watch(birthTimeState, (newVal) => {
+  if (form.birthTime !== '') {
+    form.birthTime = `${newVal.hour}:${newVal.minute}`
+  }
+})
 
 const isFormValid = computed(() => {
   return form.name.trim() !== '' && form.birthday !== '' && form.location !== '' && form.zodiac !== ''
