@@ -12,6 +12,7 @@ export default defineConfig(({ mode }) => {
     : 'http://127.0.0.1:8641'
 
   return {
+    base: '/admin/',
     plugins: [vue()],
     server: {
       proxy: {
