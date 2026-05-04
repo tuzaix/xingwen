@@ -386,9 +386,9 @@
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { 
-  User, Loading, Download, View, Refresh, 
+  User, Loading, Download, View, 
   Delete, ArrowDown, Printer, CopyDocument,
-  CircleClose, Pointer
+  CircleClose
 } from '@element-plus/icons-vue'
 import request from '../utils/request'
 import { marked } from 'marked'
@@ -455,12 +455,6 @@ const formatDuration = (seconds: number) => {
   const mins = Math.floor(seconds / 60)
   const secs = Math.floor(seconds % 60)
   return `${mins}分${secs}秒`
-}
-
-const maskUserId = (id: string) => {
-  if (!id) return '-'
-  if (id.length <= 8) return id
-  return id.substring(0, 4) + '****' + id.substring(id.length - 4)
 }
 
 const renderMarkdown = (content: string) => {

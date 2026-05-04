@@ -182,7 +182,6 @@ import { useReportStore } from '../stores/report'
 import AnalysisLoading from '../components/AnalysisLoading.vue'
 import PosterModal from '../components/PosterModal.vue'
 import axios from 'axios'
-import { marked } from 'marked'
 
 const route = useRoute()
 const router = useRouter()
@@ -222,10 +221,6 @@ const handleDownloadPDF = async () => {
     console.error('PDF Download Error:', err)
     alert('下载 PDF 失败，请稍后重试。')
   }
-}
-
-const renderMarkdown = (content: string) => {
-  return marked(content)
 }
 
 const formatBirthDate = (dateStr: string) => {
@@ -552,13 +547,4 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.section-content :deep(p) {
-  margin-bottom: 1rem;
-}
-.section-content :deep(h4) {
-  font-weight: bold;
-  margin-top: 1.5rem;
-  margin-bottom: 0.5rem;
-  color: var(--xingwen-dark);
-}
 </style>
