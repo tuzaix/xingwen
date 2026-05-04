@@ -132,8 +132,13 @@
               
               <div class="info-grid">
                 <div class="info-item">
-                  <span class="label">出生日期</span>
-                  <span class="value">{{ formatDate(currentReport.birthday) }} ({{ currentReport.calendar_type === 'lunar' ? '农历' : '公历' }})</span>
+                  <div class="label-with-tag">
+                    <span class="label">出生日期</span>
+                    <el-tag size="small" :type="currentReport.calendar_type === 'lunar' ? 'warning' : 'info'" effect="plain" class="calendar-tag">
+                      {{ currentReport.calendar_type === 'lunar' ? '农历' : '公历' }}
+                    </el-tag>
+                  </div>
+                  <span class="value">{{ formatDate(currentReport.birthday) }}</span>
                 </div>
                 <div class="info-item">
                   <span class="label">所属地区</span>
@@ -411,8 +416,31 @@ const statusMap: any = {
 const formatDate = (dateStr: string, onlyDate = false) => {
   if (!dateStr) return '-'
   const date = new Date(dateStr)
-  if (onlyDate) return date.toLocaleDateString('zh-CN')
-  return date.toLocaleString('zh-CN')
+  
+  // 如果秒数是 1，说明是后端标记的“时间未知”
+  if (date.getSeconds() === 1) {
+    return date.toLocaleDateString('zh-CN', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+    }).replace(/\//g, '-') + ' (出生时间未知)'
+  }
+
+  if (onlyDate) {
+    return date.toLocaleDateString('zh-CN', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+    }).replace(/\//g, '-')
+  }
+  
+  return date.toLocaleString('zh-CN', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit'
+  }).replace(/\//g, '-')
 }
 
 const formatDuration = (seconds: number) => {
@@ -716,7 +744,21 @@ onMounted(() => {
 .info-item {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 4px;
+}
+
+.label-with-tag {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.calendar-tag {
+  height: 18px;
+  line-height: 16px;
+  padding: 0 6px;
+  font-size: 11px;
+  font-weight: normal;
 }
 
 .info-item.full-width {

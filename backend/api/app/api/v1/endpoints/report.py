@@ -128,10 +128,19 @@ async def generate_report_task(report_id: str):
                 report.bazi = bazi_string
                 report.bazi_favorable_elements = bazi_favorable_elements
 
+            # 准备用户信息供 AI 使用
+            # 如果秒数为 1，说明是我们在 create_report 中标记的“时间未知”
+            birthday_str = "未知"
+            if report.birthday:
+                if report.birthday.second == 1:
+                    birthday_str = report.birthday.strftime("%Y-%m-%d (出生时间未知)")
+                else:
+                    birthday_str = report.birthday.strftime("%Y-%m-%d %H:%M")
+
             user_info = {
                 "name": report.user_name,
                 "gender": report.gender,
-                "birthday": report.birthday.strftime("%Y-%m-%d %H:%M") if report.birthday else "未知",
+                "birthday": birthday_str,
                 "focus_area": report.focus_area,
                 "location": report.location or "未知",
                 "mbti": report.mbti or "未知",
@@ -139,6 +148,10 @@ async def generate_report_task(report_id: str):
                 "bazi": bazi_string,
                 "bazi_favorable_elements": bazi_favorable_elements
             }
+            logger.info(f"report.birthday: {report.birthday}")
+            logger.info(f"user_info: {user_info}")
+
+            raise Exception("调试用")
 
             sections = await coordinator.generate_astrology_report(user_info, palm_features)
             end_time = datetime.now()
@@ -203,12 +216,20 @@ async def create_report(
     # Try parsing birthday with or without time
     birthday_dt = None
     if data.birthday:
-        for fmt in ("%Y-%m-%d %H:%M", "%Y-%m-%d"):
+        # 先去除前后空格，防止 "2024-05-05 " 导致解析失败
+        clean_birthday = data.birthday.strip()
+        try:
+            # 尝试解析包含时间的格式
+            birthday_dt = datetime.strptime(clean_birthday, "%Y-%m-%d %H:%M")
+        except ValueError:
             try:
-                birthday_dt = datetime.strptime(data.birthday, fmt)
-                break
+                # 尝试解析仅包含日期的格式
+                birthday_dt = datetime.strptime(clean_birthday, "%Y-%m-%d")
+                # 如果只有日期，按照约定设置为正午 12:00
+                # 我们设置 second=1 作为内部标记，表示“用户未提供具体时间”
+                birthday_dt = birthday_dt.replace(hour=12, minute=0, second=1)
             except ValueError:
-                continue
+                birthday_dt = None
     
     print(f"Parsed birthday: {birthday_dt}")
 
@@ -310,10 +331,18 @@ async def download_report_pdf(
         from fastapi.responses import StreamingResponse
         import urllib.parse
         
+        # 处理生日显示，识别“时间未知”标记
+        birthday_str = "未知"
+        if report.birthday:
+            if report.birthday.second == 1:
+                birthday_str = report.birthday.strftime("%Y-%m-%d (时间未知)")
+            else:
+                birthday_str = report.birthday.strftime("%Y-%m-%d %H:%M")
+
         report_data = {
             "user_name": report.user_name,
             "gender": report.gender,
-            "birthday": report.birthday.strftime("%Y-%m-%d %H:%M") if report.birthday else "未知",
+            "birthday": birthday_str,
             "focus_area": report.focus_area,
             "bazi": report.bazi,
             "bazi_favorable_elements": report.bazi_favorable_elements,
