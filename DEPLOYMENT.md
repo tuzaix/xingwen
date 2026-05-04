@@ -148,9 +148,9 @@ After=network.target
 [Service]
 User=root
 Group=root
-WorkingDirectory=/var/www/xingwen/backend/api
-Environment="PATH=/var/www/xingwen/backend/api/venv/bin"
-ExecStart=/var/www/xingwen/backend/api/venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8641
+WorkingDirectory=/var/www/zhangjing/backend
+Environment="PATH=/var/www/zhangjing/backend/venv/bin"
+ExecStart=/var/www/zhangjing/backend/venv/bin/gunicorn -w 4 -k uvicorn.workers.UvicornWorker app.main:app --bind 0.0.0.0:8000
 
 [Install]
 WantedBy=multi-user.target
@@ -167,14 +167,14 @@ server {
 
     # H5 用户端
     location / {
-        root /var/www/xingwen/frontend/h5/dist;
+        root /var/www/zhangjing/frontend/h5/dist;
         index index.html;
         try_files $uri $uri/ /index.html;
     }
 
     # Admin 管理后台
     location /admin {
-        alias /var/www/xingwen/frontend/admin/dist;
+        alias /var/www/zhangjing/frontend/admin/dist;
         index index.html;
         try_files $uri $uri/ /admin/index.html;
     }
