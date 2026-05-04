@@ -11,11 +11,12 @@
 - **Redis**: 6.0+
 - **字体文件**: 确保 `backend/api/app/assets/fonts/` 目录下包含必要的字体文件 (如 OPPOSans)。
 
----
+***
 
 ## 二、 后端部署 (Backend)
 
 ### 1. 准备环境
+
 ```bash
 cd backend/api
 python -m venv venv
@@ -28,6 +29,7 @@ pip install -r requirements.txt
 ```
 
 ### 2. 数据库准备 (MySQL)
+
 在部署前，您需要创建数据库并配置专用的数据库用户。请在 MySQL 终端执行以下 SQL：
 
 ```sql
@@ -45,11 +47,15 @@ FLUSH PRIVILEGES;
 ```
 
 ### 3. 配置文件
+
 复制 `.env.example` 为 `.env` 并根据实际环境修改：
+
 ```bash
 cp .env.example .env
 ```
+
 重点修改项：
+
 - `DB_DRIVER`: 数据库驱动 (默认 mysql+aiomysql)
 - `DB_HOST`: MySQL 地址
 - `DB_USER`: 数据库用户名
@@ -60,24 +66,29 @@ cp .env.example .env
 - `AI_BASE_URL`: API 代理地址 (如有)
 
 ### 4. 初始化项目
+
 我们提供了一个一键初始化脚本，会自动运行迁移并注入初始数据：
+
 ```bash
 python init_project.py
 ```
+
 **注意**: 运行前请确保 MySQL 服务已启动且 `.env` 配置正确。
 
 ### 5. 启动服务
+
 ```bash
 uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
----
+***
 
 ## 三、 前端部署 (Frontend)
 
 项目包含两个前端工程：`admin` (管理后台) 和 `h5` (用户端)。
 
 ### 1. 管理后台 (Admin)
+
 ```bash
 cd frontend/admin
 cp .env.example .env
@@ -89,6 +100,7 @@ npm run build
 ```
 
 ### 2. 用户端 (H5)
+
 ```bash
 cd frontend/h5
 cp .env.example .env
@@ -99,7 +111,7 @@ npm run dev
 npm run build
 ```
 
----
+***
 
 ## 四、 Docker 部署 (推荐)
 
@@ -111,38 +123,43 @@ docker-compose up -d
 ```
 
 Docker Compose 会自动启动：
+
 - MySQL 数据库
 - Redis 缓存
 - Backend API 服务
 - Admin 管理后台 (Nginx 驱动)
 - H5 用户端 (Nginx 驱动)
 
----
+***
 
 ## 五、 Nginx 生产环境配置 (推荐)
 
 在生产环境中，推荐使用 Nginx 作为反向代理和静态资源服务器。
 
 ### 1. 后端 API (Systemd 服务)
+
 创建 `/etc/systemd/system/xingwen-api.service`:
+
 ```ini
 [Unit]
 Description=Xingwen AI API Service
 After=network.target
 
 [Service]
-User=www-data
-Group=www-data
+User=root
+Group=root
 WorkingDirectory=/var/www/xingwen/backend/api
 Environment="PATH=/var/www/xingwen/backend/api/venv/bin"
-ExecStart=/var/www/xingwen/backend/api/venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8000
+ExecStart=/var/www/xingwen/backend/api/venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8641
 
 [Install]
 WantedBy=multi-user.target
 ```
 
 ### 2. Nginx 虚拟主机配置
+
 创建 `/etc/nginx/sites-available/xingwen`:
+
 ```nginx
 server {
     listen 80;
@@ -178,14 +195,16 @@ server {
     }
 }
 ```
+
 启用配置：
+
 ```bash
 ln -s /etc/nginx/sites-available/xingwen /etc/nginx/sites-enabled/
 nginx -t
 systemctl restart nginx
 ```
 
----
+***
 
 ## 六、 初始账号信息
 
@@ -194,10 +213,11 @@ systemctl restart nginx
 - **默认密码**: `admin123`
 - **测试卡密**: `XW12345678123456`
 
----
+***
 
 ## 七、 常见问题 (FAQ)
 
 1. **字体显示为方块**: 检查后端 `app/assets/fonts` 是否缺失字体文件，或在 `.env` 中指定正确的路径。
 2. **API 404 错误**: 检查前端 `.env` 中的 `VITE_API_BASE_URL` 是否指向了正确的后端地址及端口。
 3. **数据库连接失败**: 确保 MySQL 允许远程连接或主机地址正确，且已通过 `init_project.py` 创建了数据库。
+
