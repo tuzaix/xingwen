@@ -76,7 +76,7 @@
             </div>
             <template #dropdown>
               <el-dropdown-menu>
-                <el-dropdown-item command="profile">个人中心</el-dropdown-item>
+                <el-dropdown-item command="password">修改密码</el-dropdown-item>
                 <el-dropdown-item command="logout" divided>退出登录</el-dropdown-item>
               </el-dropdown-menu>
             </template>
@@ -98,14 +98,48 @@
         © 2024 星纹 AI 手相命理解析系统 · 版权所有
       </el-footer>
     </el-container>
+
+    <!-- 修改密码对话框 -->
+    <el-dialog
+      v-model="passwordVisible"
+      title="修改管理员密码"
+      width="400px"
+      append-to-body
+      destroy-on-close
+      @closed="resetPasswordForm"
+    >
+      <el-form
+        ref="passwordFormRef"
+        :model="passwordForm"
+        :rules="passwordRules"
+        label-position="top"
+      >
+        <el-form-item label="旧密码" prop="old_password">
+          <el-input v-model="passwordForm.old_password" type="password" show-password placeholder="请输入旧密码" />
+        </el-form-item>
+        <el-form-item label="新密码" prop="new_password">
+          <el-input v-model="passwordForm.new_password" type="password" show-password placeholder="请输入新密码" />
+        </el-form-item>
+        <el-form-item label="确认新密码" prop="confirm_password">
+          <el-input v-model="passwordForm.confirm_password" type="password" show-password placeholder="请再次输入新密码" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="passwordVisible = false">取消</el-button>
+          <el-button type="primary" :loading="submitting" @click="submitPasswordChange">确定修改</el-button>
+        </div>
+      </template>
+    </el-dialog>
   </el-container>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, reactive } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
-import { ElMessageBox } from 'element-plus'
+import { ElMessageBox, ElMessage, type FormInstance } from 'element-plus'
+import request from '../utils/request'
 import { 
   DataBoard, 
   Ticket, 
@@ -137,10 +171,74 @@ const pageTitle = computed(() => {
   return titles[route.name as string] || ''
 })
 
+// 修改密码相关
+const passwordVisible = ref(false)
+const submitting = ref(false)
+const passwordFormRef = ref<FormInstance>()
+const passwordForm = reactive({
+  old_password: '',
+  new_password: '',
+  confirm_password: ''
+})
+
+const validateConfirmPassword = (rule: any, value: string, callback: any) => {
+  if (value === '') {
+    callback(new Error('请再次输入新密码'))
+  } else if (value !== passwordForm.new_password) {
+    callback(new Error('两次输入密码不一致!'))
+  } else {
+    callback()
+  }
+}
+
+const passwordRules = {
+  old_password: [{ required: true, message: '请输入旧密码', trigger: 'blur' }],
+  new_password: [
+    { required: true, message: '请输入新密码', trigger: 'blur' },
+    { min: 6, message: '密码长度不能少于6位', trigger: 'blur' }
+  ],
+  confirm_password: [{ required: true, validator: validateConfirmPassword, trigger: 'blur' }]
+}
+
 const handleCommand = (command: string) => {
+  console.log('Dropdown command:', command)
   if (command === 'logout') {
     handleLogout()
+  } else if (command === 'password') {
+    console.log('Opening password dialog')
+    passwordVisible.value = true
   }
+}
+
+const resetPasswordForm = () => {
+  passwordFormRef.value?.resetFields()
+}
+
+const submitPasswordChange = async () => {
+  if (!passwordFormRef.value) return
+  
+  await passwordFormRef.value.validate(async (valid) => {
+    if (valid) {
+      submitting.value = true
+      try {
+        await request.post('/auth/change-password', {
+          old_password: passwordForm.old_password,
+          new_password: passwordForm.new_password
+        })
+        ElMessage.success('密码修改成功，请重新登录')
+        passwordVisible.value = false
+        // 强制重新登录
+        setTimeout(() => {
+          authStore.logout()
+          router.push('/login')
+        }, 1500)
+      } catch (error: any) {
+        ElMessage.error(error.response?.data?.detail || '修改失败')
+      } finally {
+        submitting.value = false
+      }
+    }
+  })
 }
 
 const handleLogout = () => {

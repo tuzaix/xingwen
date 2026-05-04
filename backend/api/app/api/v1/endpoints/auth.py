@@ -10,7 +10,7 @@ from app.core import security
 from app.core.config import settings
 from app.db.session import get_db
 from app.models.admin import AdminUser
-from app.schemas.token import Token
+from app.schemas.token import Token, PasswordChange
 
 router = APIRouter()
 
@@ -37,3 +37,20 @@ async def login_access_token(
         ),
         "token_type": "bearer",
     }
+
+@router.post("/change-password")
+async def change_password(
+    password_data: PasswordChange,
+    db: AsyncSession = Depends(get_db),
+    current_user: AdminUser = Depends(deps.get_current_user)
+) -> Any:
+    """
+    Change password for current user
+    """
+    if not security.verify_password(password_data.old_password, current_user.password_hash):
+        raise HTTPException(status_code=400, detail="旧密码错误")
+    
+    current_user.password_hash = security.get_password_hash(password_data.new_password)
+    db.add(current_user)
+    await db.commit()
+    return {"message": "密码修改成功"}
