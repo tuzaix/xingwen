@@ -3,6 +3,13 @@ from typing import Any, Union
 import jwt
 from passlib.context import CryptContext
 from app.core.config import settings
+import bcrypt
+
+# Monkeypatch bcrypt for passlib compatibility (AttributeError: module 'bcrypt' has no attribute '__about__')
+if not hasattr(bcrypt, "__about__"):
+    class BcryptAbout:
+        __version__ = bcrypt.__version__
+    bcrypt.__about__ = BcryptAbout()
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
