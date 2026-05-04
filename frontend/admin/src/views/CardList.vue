@@ -56,7 +56,7 @@
             <el-button type="success" @click="showGenerateDialog = true">
               <el-icon class="mr-1"><Plus /></el-icon> 批量生成
             </el-button>
-            <el-button type="warning" @click="handleExport">
+            <el-button type="warning" @click="handleShowExport">
               <el-icon class="mr-1"><Download /></el-icon> 导出
             </el-button>
           </div>
@@ -171,6 +171,28 @@
         </div>
       </template>
     </el-dialog>
+
+    <!-- 导出配置对话框 -->
+    <el-dialog v-model="showExportDialog" title="导出卡密文件" width="500px">
+      <el-form :model="exportConfig" label-position="top">
+        <el-form-item label="跳转网址 (Base URL)">
+          <el-input v-model="exportConfig.baseUrl" placeholder="如: https://xingwen.ai" />
+          <p class="text-xs text-gray-400 mt-1">导出文件将自动拼接为: {网址}/?card_code={卡密}</p>
+        </el-form-item>
+        <el-form-item label="导出格式">
+          <el-radio-group v-model="exportConfig.format">
+            <el-radio label="csv">CSV 表格 (通用)</el-radio>
+            <el-radio label="txt">TXT 纯文本 (简洁)</el-radio>
+          </el-radio-group>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="showExportDialog = false">取消</el-button>
+          <el-button type="primary" @click="handleExport">开始导出</el-button>
+        </div>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -185,6 +207,7 @@ const { toClipboard } = useClipboard()
 const loading = ref(false)
 const generating = ref(false)
 const showGenerateDialog = ref(false)
+const showExportDialog = ref(false)
 const tableData = ref([])
 const total = ref(0)
 const batchOptions = ref<string[]>([])
@@ -194,6 +217,11 @@ const stats = ref([
   { label: '已核销', value: '0' },
   { label: '已失效', value: '0' }
 ])
+
+const exportConfig = reactive({
+  baseUrl: window.location.origin.replace('/admin', ''),
+  format: 'csv'
+})
 
 const queryParams = reactive({
   page: 1,
@@ -301,35 +329,55 @@ const handleRevoke = async (id: number) => {
   }
 }
 
-const handleExport = () => {
+const handleShowExport = () => {
   if (tableData.value.length === 0) {
     ElMessage.warning('没有可导出的数据')
     return
   }
-  
-  const headers = ['卡密', '批次号', '类型', '状态', '有效期至', '核销时间']
-  const rows = tableData.value.map((item: any) => [
-    formatCode(item.card_code),
-    item.batch_no,
-    typeMap[item.card_type],
-    statusMap[item.status].label,
-    formatDate(item.expire_at),
-    item.used_at ? formatDate(item.used_at) : '-'
-  ])
+  showExportDialog.value = true
+}
 
-  let csvContent = "data:text/csv;charset=utf-8,\uFEFF"
-  csvContent += headers.join(",") + "\n"
-  rows.forEach(row => {
-    csvContent += row.join(",") + "\n"
+const handleExport = () => {
+  const headers = ['卡密', '直达链接', '批次号', '类型', '状态', '有效期至']
+  const rows = tableData.value.map((item: any) => {
+    const link = `${exportConfig.baseUrl.replace(/\/$/, '')}/?card_code=${item.card_code}`
+    return [
+      formatCode(item.card_code),
+      link,
+      item.batch_no,
+      typeMap[item.card_type],
+      statusMap[item.status].label,
+      formatDate(item.expire_at)
+    ]
   })
 
-  const encodedUri = encodeURI(csvContent)
+  let content = ''
+  let filename = `卡密导出_${new Date().getTime()}`
+
+  if (exportConfig.format === 'csv') {
+    content = "data:text/csv;charset=utf-8,\uFEFF"
+    content += headers.join(",") + "\n"
+    rows.forEach(row => {
+      content += row.join(",") + "\n"
+    })
+    filename += '.csv'
+  } else {
+    content = "data:text/plain;charset=utf-8,"
+    rows.forEach(row => {
+      content += `卡密: ${row[0]}\n链接: ${row[1]}\n------------------\n`
+    })
+    filename += '.txt'
+  }
+
+  const encodedUri = encodeURI(content)
   const link = document.createElement("a")
   link.setAttribute("href", encodedUri)
-  link.setAttribute("download", `卡密导出_${new Date().getTime()}.csv`)
+  link.setAttribute("download", filename)
   document.body.appendChild(link)
   link.click()
   document.body.removeChild(link)
+  showExportDialog.value = false
+  ElMessage.success('导出成功')
 }
 
 const showDetail = (row: any) => {
