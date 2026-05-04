@@ -133,7 +133,7 @@ const validateCard = async (code: string) => {
   errorMsg.value = ''
   try {
     const res = await axios.post('/card/verify', { card_code: code }, {
-      baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1'
+      baseURL: import.meta.env.VITE_API_BASE_URL || '/api/v1'
     })
     if (res.data.valid) {
       isValidated.value = true
@@ -142,7 +142,6 @@ const validateCard = async (code: string) => {
       // 已经使用过，直接跳转到结果页
       isValidated.value = true
       userStore.setUserInfo({ cardCode: code })
-      alert('该卡密已使用，正在为您跳转至之前的解析报告')
       router.replace(`/report/${res.data.report_id}`)
     } else {
       errorMsg.value = res.data.message || '卡密无效或已被使用'
