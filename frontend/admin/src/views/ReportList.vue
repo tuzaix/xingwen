@@ -117,73 +117,81 @@
         <!-- 头部摘要与详细个人信息 -->
         <div class="report-detail-header mb-8">
           <div class="user-profile-section">
-            <div class="profile-avatar">
-              <el-avatar :size="80" class="user-large-avatar">{{ currentReport.user_name?.charAt(0) }}</el-avatar>
-              <el-tag size="small" :type="currentReport.gender === '男' ? '' : 'danger'" class="gender-tag">
-                {{ currentReport.gender }}
-              </el-tag>
+            <div class="profile-avatar-wrapper">
+              <el-avatar :size="100" class="user-large-avatar" :src="currentReport.gender === '男' ? '' : ''">
+                {{ currentReport.user_name?.charAt(0) }}
+              </el-avatar>
+              <div class="gender-badge" :class="currentReport.gender === '男' ? 'male' : 'female'">
+                {{ currentReport.gender === '男' ? '♂' : '♀' }}
+              </div>
             </div>
             
-            <div class="profile-details">
-              <div class="profile-row main">
+            <div class="profile-main">
+              <div class="name-row">
                 <h3 class="user-name">{{ currentReport.user_name }}</h3>
-                <el-tag size="small" effect="dark" type="warning">{{ currentReport.focus_area }}</el-tag>
+                <el-tag size="default" effect="dark" type="warning" class="focus-tag">{{ currentReport.focus_area }}</el-tag>
               </div>
               
-              <div class="info-grid">
-                <div class="info-item">
-                  <div class="label-with-tag">
-                    <span class="label">出生日期</span>
-                    <el-tag size="small" :type="currentReport.calendar_type === 'lunar' ? 'warning' : 'info'" effect="plain" class="calendar-tag">
+              <div class="info-grid-modern">
+                <div class="info-card">
+                  <div class="card-label">
+                    <el-icon><Calendar /></el-icon> 出生日期
+                    <el-tag size="small" :type="currentReport.calendar_type === 'lunar' ? 'warning' : 'info'" effect="plain" class="calendar-tag-mini">
                       {{ currentReport.calendar_type === 'lunar' ? '农历' : '公历' }}
                     </el-tag>
                   </div>
-                  <span class="value">{{ formatDate(currentReport.birthday) }}</span>
+                  <div class="card-value">{{ formatDate(currentReport.birthday) }}</div>
                 </div>
-                <div class="info-item">
-                  <span class="label">所属地区</span>
-                  <span class="value">{{ currentReport.location || '未知' }}</span>
+                
+                <div class="info-card">
+                  <div class="card-label"><el-icon><Location /></el-icon> 所属地区</div>
+                  <div class="card-value">{{ currentReport.location || '未知' }}</div>
                 </div>
-                <div class="info-item">
-                  <span class="label">生肖星座</span>
-                  <span class="value">{{ currentReport.zodiac || '未知' }}</span>
+                
+                <div class="info-card">
+                  <div class="card-label"><el-icon><Compass /></el-icon> 生肖星座</div>
+                  <div class="card-value">{{ currentReport.zodiac || '未知' }}</div>
                 </div>
-                <div class="info-item">
-                  <span class="label">生辰八字</span>
-                  <span class="value">{{ currentReport.bazi || '解析中...' }}</span>
+
+                <div class="info-card">
+                  <div class="card-label"><el-icon><MagicStick /></el-icon> 生辰八字</div>
+                  <div class="card-value bazi-value">{{ currentReport.bazi || '解析中...' }}</div>
                 </div>
-                <div class="info-item full-width">
-                  <span class="label">八字喜用神</span>
-                  <span class="value">{{ currentReport.bazi_favorable_elements || '解析中...' }}</span>
+
+                <div class="info-card full-row">
+                  <div class="card-label"><el-icon><ElementPlus /></el-icon> 八字喜用神</div>
+                  <div class="card-value highlight-value">{{ currentReport.bazi_favorable_elements || '解析中...' }}</div>
                 </div>
-                <div class="info-item">
-                  <span class="label">MBTI 类型</span>
-                  <span class="value">{{ currentReport.mbti || '未知' }}</span>
+
+                <div class="info-card">
+                  <div class="card-label"><el-icon><ChatLineRound /></el-icon> MBTI 类型</div>
+                  <div class="card-value">{{ currentReport.mbti || '未知' }}</div>
                 </div>
-                <div class="info-item">
-                  <span class="label">使用卡密</span>
-                  <span class="value font-mono">{{ currentReport.card_code }}</span>
-                </div>
-                <div class="info-item">
-                  <span class="label">用户 ID</span>
-                  <span class="value">{{ currentReport.user_id }}</span>
+
+                <div class="info-card">
+                  <div class="card-label"><el-icon><Key /></el-icon> 使用卡密</div>
+                  <div class="card-value font-mono">{{ currentReport.card_code }}</div>
                 </div>
               </div>
             </div>
           </div>
 
-          <div class="report-meta-info">
-            <div class="meta-item">
-              <label>报告状态</label>
-              <el-tag :type="statusMap[currentReport.status].type" effect="dark">{{ statusMap[currentReport.status].label }}</el-tag>
+          <div class="report-side-stats">
+            <div class="stat-block">
+              <div class="stat-label">报告状态</div>
+              <el-tag :type="statusMap[currentReport.status].type" effect="dark" size="large">{{ statusMap[currentReport.status].label }}</el-tag>
             </div>
-            <div class="meta-item">
-              <label>AI 模型</label>
-              <span class="model-badge">{{ currentReport.model_name || systemConfig.ai_model }}</span>
+            <div class="stat-block">
+              <div class="stat-label">AI 模型</div>
+              <div class="model-name-text">{{ currentReport.model_name || systemConfig.ai_model }}</div>
             </div>
-            <div class="meta-item">
-              <label>生成耗时</label>
-              <span class="duration-text">{{ formatDuration(currentReport.generation_time) }}</span>
+            <div class="stat-block">
+              <div class="stat-label">生成耗时</div>
+              <div class="duration-badge">{{ formatDuration(currentReport.generation_time) }}</div>
+            </div>
+            <div class="stat-block">
+              <div class="stat-label">用户 ID</div>
+              <div class="uid-text">{{ currentReport.user_id }}</div>
             </div>
           </div>
         </div>
@@ -679,220 +687,306 @@ onMounted(() => {
   justify-content: flex-end;
 }
 
-/* Drawer Styles */
+/* Drawer Styles Refactored */
 .drawer-content {
-  padding: 0 24px 24px;
+  padding: 0 32px 32px;
 }
 
 .report-detail-header {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
-  padding: 24px;
-  background-color: #f8fafc;
-  border-radius: 12px;
+  align-items: stretch;
+  padding: 32px;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border-radius: 16px;
   border: 1px solid #e2e8f0;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
 }
 
 .user-profile-section {
   display: flex;
-  gap: 24px;
+  gap: 40px;
   flex: 1;
 }
 
-.profile-avatar {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
+.profile-avatar-wrapper {
+  position: relative;
+  flex-shrink: 0;
 }
 
 .user-large-avatar {
-  background-color: #6366f1;
-  font-size: 32px;
+  background: linear-gradient(135deg, #6366f1 0%, #4338ca 100%);
+  font-size: 48px;
   font-weight: bold;
+  border: 4px solid #fff;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
 }
 
-.gender-tag {
-  border-radius: 10px;
-}
-
-.profile-details {
-  flex: 1;
-}
-
-.profile-row.main {
+.gender-badge {
+  position: absolute;
+  bottom: 5px;
+  right: 5px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 16px;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: bold;
+  border: 2px solid #fff;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.gender-badge.male {
+  background-color: #3b82f6;
+  color: #fff;
+}
+
+.gender-badge.female {
+  background-color: #ec4899;
+  color: #fff;
+}
+
+.profile-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.name-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
 }
 
 .user-name {
   margin: 0;
-  font-size: 26px;
-  font-weight: bold;
-  color: #1e293b;
+  font-size: 32px;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -0.025em;
 }
 
-.info-grid {
+.focus-tag {
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  padding: 0 12px;
+}
+
+.info-grid-modern {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px 24px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
 }
 
-.info-item {
+.info-card {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 10px;
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  transition: all 0.2s ease;
 }
 
-.label-with-tag {
+.info-card:hover {
+  background: #fff;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.info-card.full-row {
+  grid-column: span 3;
+  background: linear-gradient(to right, rgba(251, 191, 36, 0.05), transparent);
+  border-left: 3px solid #fbbf24;
+}
+
+.card-label {
   display: flex;
   align-items: center;
-  gap: 8px;
-}
-
-.calendar-tag {
-  height: 18px;
-  line-height: 16px;
-  padding: 0 6px;
-  font-size: 11px;
-  font-weight: normal;
-}
-
-.info-item.full-width {
-  grid-column: span 2;
-}
-
-.info-item .label {
-  font-size: 14px;
+  gap: 6px;
+  font-size: 12px;
   color: #94a3b8;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
-.info-item .value {
+.card-label .el-icon {
+  font-size: 14px;
+}
+
+.card-value {
   font-size: 16px;
   color: #334155;
-  font-weight: 500;
+  font-weight: 600;
 }
 
-.report-meta-info {
+.bazi-value {
+  color: #1e293b;
+  font-family: "Noto Serif SC", serif;
+}
+
+.highlight-value {
+  color: #b45309;
+  font-size: 18px;
+}
+
+.calendar-tag-mini {
+  height: 16px;
+  line-height: 14px;
+  padding: 0 4px;
+  font-size: 10px;
+  margin-left: 4px;
+}
+
+.report-side-stats {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  padding-left: 32px;
-  border-left: 1px solid #e2e8f0;
-  min-width: 140px;
+  justify-content: space-between;
+  padding-left: 40px;
+  border-left: 2px dashed #e2e8f0;
+  min-width: 180px;
 }
 
-.meta-item {
+.stat-block {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 4px;
+  gap: 8px;
 }
 
-.meta-item label {
-  font-size: 14px;
+.stat-label {
+  font-size: 13px;
   color: #94a3b8;
+  font-weight: 600;
 }
 
-.model-badge {
+.model-name-text {
   font-size: 14px;
+  font-weight: 700;
   color: #6366f1;
-  font-weight: bold;
   background: #eef2ff;
-  padding: 2px 8px;
-  border-radius: 4px;
+  padding: 4px 12px;
+  border-radius: 6px;
+  border: 1px solid #c7d2fe;
 }
 
-.duration-text {
+.duration-badge {
   font-size: 14px;
+  font-weight: 600;
   color: #64748b;
+  background: #f1f5f9;
+  padding: 4px 10px;
+  border-radius: 6px;
+}
+
+.uid-text {
+  font-size: 12px;
+  font-family: monospace;
+  color: #94a3b8;
 }
 
 .report-content-wrapper {
   position: relative;
-  background-color: #f8fafc;
-  border-radius: 12px;
-  padding: 24px;
-  min-height: 400px;
+  background-color: #fff;
+  border-radius: 16px;
+  padding: 40px;
+  min-height: 500px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+  border: 1px solid #f1f5f9;
 }
 
 .content-toolbar {
   display: flex;
   justify-content: flex-end;
-  gap: 8px;
-  margin-bottom: 20px;
+  gap: 12px;
+  margin-bottom: 32px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #f1f5f9;
 }
 
 .prose-container {
-  font-family: "Noto Serif SC", serif;
+  font-family: "Inter", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
   line-height: 1.8;
   color: #334155;
+  font-size: 16px;
 }
 
 .prose-container :deep(h2) {
-  color: #1e293b;
-  border-left: 4px solid #6366f1;
-  padding-left: 12px;
-  margin-top: 32px;
+  color: #0f172a;
+  font-size: 24px;
+  font-weight: 800;
+  border-left: 6px solid #6366f1;
+  padding-left: 16px;
+  margin: 40px 0 20px;
+  letter-spacing: -0.025em;
+}
+
+.prose-container :deep(p) {
+  margin-bottom: 1.5em;
+  text-align: justify;
 }
 
 /* Structured Report Styles */
 .structured-report {
-  font-family: "Noto Serif SC", serif;
+  font-family: "Inter", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
 }
 
 .report-section {
-  margin-bottom: 40px;
+  margin-bottom: 48px;
 }
 
 .section-title {
-  font-size: 1.7rem;
-  color: #1e293b;
-  border-left: 4px solid #6366f1;
+  font-size: 24px;
+  color: #0f172a;
+  border-left: 6px solid #6366f1;
   padding-left: 16px;
-  margin-bottom: 16px;
-  font-weight: bold;
+  margin-bottom: 24px;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  display: flex;
+  align-items: center;
 }
 
 .section-highlights {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 16px;
-  padding-left: 20px;
+  gap: 10px;
+  margin-bottom: 24px;
+  padding-left: 22px;
 }
 
 .highlight-tag {
-  background-color: #6366f1;
-  border-color: #6366f1;
-  font-size: 14px;
-  padding: 10px 14px;
+  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+  border: none;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 8px 16px;
   height: auto;
-}
-
-.card-code {
-  font-family: monospace;
-  background-color: #f1f5f9;
-  padding: 2px 6px;
-  border-radius: 4px;
-  color: #475569;
-  font-size: 12px;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.2);
+  color: #fff;
 }
 
 .section-paragraphs {
-  padding: 0 20px;
+  padding-left: 22px;
 }
 
 .paragraph {
-  text-indent: 2em;
-  margin-bottom: 1.5em;
-  line-height: 1.8;
-  color: #334155;
-  font-size: 1.2rem;
+  text-indent: 0;
+  margin-bottom: 1.25em;
+  line-height: 1.85;
+  color: #475569;
+  font-size: 16px;
   text-align: justify;
+  font-weight: 400;
+}
+
+.paragraph:last-child {
+  margin-bottom: 0;
 }
 
 .loading-content, .error-content {
