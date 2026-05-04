@@ -31,4 +31,22 @@ const router = createRouter({
   ]
 })
 
+// 全局前置守卫：保持卡密参数持续传递
+router.beforeEach((to, from, next) => {
+  const cardCode = to.query.card_code || from.query.card_code
+  
+  if (cardCode && !to.query.card_code) {
+    // 如果上一个页面有卡密，但目标页面没有，则自动补充
+    next({
+      ...to,
+      query: {
+        ...to.query,
+        card_code: cardCode
+      }
+    })
+  } else {
+    next()
+  }
+})
+
 export default router

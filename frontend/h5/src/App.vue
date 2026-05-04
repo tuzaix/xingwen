@@ -12,6 +12,27 @@
 </template>
 
 <script setup lang="ts">
+import { onMounted, watch } from 'vue'
+import { useRoute } from 'vue-router'
+import { useUserStore } from './stores/user'
+
+const route = useRoute()
+const userStore = useUserStore()
+
+const updateCardCode = (code: any) => {
+  if (code) {
+    userStore.setUserInfo({ cardCode: (code as string).toUpperCase() })
+  }
+}
+
+onMounted(() => {
+  updateCardCode(route.query.card_code)
+})
+
+// 持续监听路由参数变化，确保卡密实时同步到 store
+watch(() => route.query.card_code, (newVal) => {
+  updateCardCode(newVal)
+})
 </script>
 
 <style>

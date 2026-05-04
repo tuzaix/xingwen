@@ -80,18 +80,34 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, watch, onMounted } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { useUserStore } from '../stores/user'
 import axios from 'axios'
 
 const router = useRouter()
+const route = useRoute()
 const userStore = useUserStore()
 
 const cardCode = ref(userStore.cardCode)
 const loading = ref(false)
 const errorMsg = ref('')
 const isValidated = ref(false)
+
+onMounted(() => {
+  // 优先使用 URL 中的卡密，如果没有则使用 store 中的
+  const rawCode = (route.query.card_code as string || userStore.cardCode || '').toUpperCase().replace(/[^A-Z0-9]/g, '')
+  if (rawCode) {
+    // 自动格式化卡密
+    let formatted = ''
+    for (let i = 0; i < rawCode.length && i < 16; i++) {
+      if (i > 0 && i % 4 === 0) formatted += '-'
+      formatted += rawCode[i]
+    }
+    cardCode.value = formatted
+    userStore.setUserInfo({ cardCode: formatted })
+  }
+})
 
 const formatCardCode = (e: Event) => {
   let val = (e.target as HTMLInputElement).value.toUpperCase().replace(/[^A-Z0-9]/g, '')

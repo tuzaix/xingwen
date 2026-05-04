@@ -72,8 +72,8 @@
 
               <!-- Title -->
               <div class="mb-10 text-center">
-                <h1 class="text-2xl font-bold text-amber-200 mb-2 leading-snug">
-                  星纹·全息解析
+                <h1 class="text-2xl font-bold text-amber-200 mb-2 leading-snug tracking-[0.3em]">
+                  星纹 · 全息解析
                 </h1>
                 <div class="h-px w-24 mx-auto bg-amber-500/30"></div>
               </div>
