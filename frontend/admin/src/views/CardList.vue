@@ -26,6 +26,24 @@
                 <el-icon><Search /></el-icon>
               </template>
             </el-input>
+            <el-select
+              v-model="queryParams.batch_no"
+              placeholder="选择批次号"
+              class="batch-select"
+              clearable
+              filterable
+              @change="handleSearch"
+            >
+              <template #prefix>
+                <el-icon><CollectionTag /></el-icon>
+              </template>
+              <el-option
+                v-for="item in batchOptions"
+                :key="item"
+                :label="item"
+                :value="item"
+              />
+            </el-select>
             <el-select v-model="queryParams.status" placeholder="所有状态" class="status-select" clearable @change="handleSearch">
               <el-option label="未使用" :value="0" />
               <el-option label="已使用" :value="1" />
@@ -159,7 +177,7 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
-import { Search, Plus, Download, CopyDocument } from '@element-plus/icons-vue'
+import { Search, Plus, Download, CopyDocument, CollectionTag } from '@element-plus/icons-vue'
 import request from '../utils/request'
 import useClipboard from 'vue-clipboard3'
 
@@ -169,6 +187,7 @@ const generating = ref(false)
 const showGenerateDialog = ref(false)
 const tableData = ref([])
 const total = ref(0)
+const batchOptions = ref<string[]>([])
 const stats = ref([
   { label: '总卡密数', value: '0' },
   { label: '待核销', value: '0' },
@@ -179,7 +198,7 @@ const stats = ref([
 const queryParams = reactive({
   page: 1,
   page_size: 20,
-  status: null,
+  status: 0,
   card_code: '',
   batch_no: ''
 })
@@ -317,8 +336,18 @@ const showDetail = (row: any) => {
   ElMessage.info('卡密详情: ' + row.card_code)
 }
 
+const fetchBatches = async () => {
+  try {
+    const res: any = await request.get('/card/batches')
+    batchOptions.value = res
+  } catch (error) {
+    console.error('Failed to fetch batches:', error)
+  }
+}
+
 onMounted(() => {
   handleSearch()
+  fetchBatches()
 })
 </script>
 
@@ -370,6 +399,10 @@ onMounted(() => {
 
 .status-select {
   width: 130px;
+}
+
+.batch-select {
+  width: 220px;
 }
 
 .code-wrapper {

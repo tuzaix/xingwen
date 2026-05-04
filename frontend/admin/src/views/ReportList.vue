@@ -89,7 +89,6 @@
               </el-button>
               <template #dropdown>
                 <el-dropdown-menu>
-                  <el-dropdown-item command="regenerate" :icon="Refresh">重新生成</el-dropdown-item>
                   <el-dropdown-item command="download" :icon="Download">下载 PDF</el-dropdown-item>
                   <el-dropdown-item command="delete" :icon="Delete" divided class="text-danger">删除报告</el-dropdown-item>
                 </el-dropdown-menu>
@@ -241,7 +240,6 @@
               <div v-if="!currentReport.content && !currentReport.sections?.length && currentReport.status === 2" class="error-content">
                 <el-icon><CircleClose /></el-icon>
                 <p>生成失败: {{ currentReport.error_msg || '未知错误' }}</p>
-                <el-button type="primary" plain size="small" class="mt-4" @click="handleRegenerate(currentReport.id)">重试生成</el-button>
               </div>
             </div>
           </el-tab-pane>

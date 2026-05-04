@@ -13,6 +13,16 @@ from typing import List, Optional
 
 router = APIRouter()
 
+@router.get("/batches", response_model=List[str])
+async def list_batches(
+    db: AsyncSession = Depends(get_db),
+    current_admin = Depends(deps.get_current_user)
+):
+    result = await db.execute(
+        select(CardCode.batch_no).distinct().order_by(CardCode.batch_no.desc())
+    )
+    return result.scalars().all()
+
 @router.get("/", response_model=CardListResponse)
 async def list_cards(
     db: AsyncSession = Depends(get_db),
@@ -27,7 +37,7 @@ async def list_cards(
     if status is not None:
         query = query.filter(CardCode.status == status)
     if batch_no:
-        query = query.filter(CardCode.batch_no == batch_no)
+        query = query.filter(CardCode.batch_no.like(f"%{batch_no}%"))
     if card_code:
         query = query.filter(CardCode.card_code.like(f"%{card_code.upper().replace('-', '')}%"))
     

@@ -419,7 +419,7 @@ const generateReport = async () => {
   if (!userStore.leftHandImage || !userStore.rightHandImage || !userStore.cardCode) {
     error.value = '检测到信息不完整，请重新上传手相并验证卡密。'
     loading.value = false
-    setTimeout(() => router.push('/'), 3000)
+    setTimeout(() => router.replace('/'), 3000)
     return
   }
 
@@ -512,9 +512,39 @@ const retry = () => {
   router.push('/')
 }
 
+const checkCardAndGenerate = async () => {
+  if (!userStore.cardCode) {
+    error.value = '检测到信息不完整，请重新上传手相并验证卡密。'
+    loading.value = false
+    setTimeout(() => router.replace('/'), 3000)
+    return
+  }
+
+  currentStatusText.value = '正在核验星辰密钥...'
+  try {
+    const res = await axios.post('/card/verify', { card_code: userStore.cardCode }, {
+      baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1'
+    })
+    
+    if (res.data.report_id) {
+      // 如果卡密已经使用过，直接跳转到结果页，并使用 replace 确保无法返回 loading
+      console.log('Card already used, redirecting to existing report:', res.data.report_id)
+      router.replace(`/report/${res.data.report_id}`)
+      return
+    }
+    
+    // 如果卡密有效且未被使用，则继续生成报告
+    await generateReport()
+  } catch (err: any) {
+    console.error('Card verification error on loading page:', err)
+    // 即使校验失败（如网络问题），也可以尝试继续生成，后端会再次校验
+    await generateReport()
+  }
+}
+
 onMounted(() => {
   if (route.params.id === 'loading') {
-    generateReport()
+    checkCardAndGenerate()
   } else {
     pollStatus(route.params.id as string)
   }
