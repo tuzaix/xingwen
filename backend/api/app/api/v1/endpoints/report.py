@@ -151,8 +151,6 @@ async def generate_report_task(report_id: str):
             logger.info(f"report.birthday: {report.birthday}")
             logger.info(f"user_info: {user_info}")
 
-            raise Exception("调试用")
-
             sections = await coordinator.generate_astrology_report(user_info, palm_features)
             end_time = datetime.now()
 
