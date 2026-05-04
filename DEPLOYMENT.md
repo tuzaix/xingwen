@@ -1,42 +1,28 @@
-# 星纹 AI 手相项目 - 部署指南
+# 星纹 AI 手相项目 - 生产环境部署指南 (2026版)
 
-本指南将协助您从零开始部署“星纹 AI 手相”系统，包括后端 API、管理后台以及 H5 用户端。
+本指南总结了“星纹 AI 手相”系统在 Ubuntu 环境下使用 Gunicorn + Nginx 部署的完整流程，并包含了针对部署过程中遇到的兼容性、路径及网络问题的解决方案。
 
-## 一、 环境要求
+---
 
-- **操作系统**: Linux (推荐 Ubuntu 22.04+) / macOS / Windows
-- **Python**: 3.10+
-- **Node.js**: 18.0+
-- **MySQL**: 8.0+
+## 一、 环境准备
+
+- **操作系统**: Ubuntu 22.04+ (推荐)
+- **Python**: 3.12+ (需安装 `python3-venv`)
+- **Node.js**: 18.0+ (需安装 `npm`)
+- **MySQL**: 8.0+ (需支持 `utf8mb4`)
 - **Redis**: 6.0+
-- **字体文件**: 确保 `backend/api/app/assets/fonts/` 目录下包含必要的字体文件 (如 OPPOSans)。
 
-***
+---
 
-## 二、 后端部署 (Backend)
+## 二、 数据库初始化 (MySQL)
 
-### 1. 准备环境
-
-```bash
-cd backend/api
-python -m venv venv
-# Windows
-.\venv\Scripts\activate
-# Linux/macOS
-source venv/bin/activate
-
-pip install -r requirements.txt
-```
-
-### 2. 数据库准备 (MySQL)
-
-在部署前，您需要创建数据库并配置专用的数据库用户。请在 MySQL 终端执行以下 SQL：
+在部署前，请执行以下 SQL 脚本创建数据库及专用用户：
 
 ```sql
 -- 1. 创建数据库
 CREATE DATABASE IF NOT EXISTS xingwen CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
--- 2. 创建专用用户 (替换为您的实际密码)
+-- 2. 创建专用用户
 CREATE USER 'xingwen'@'%' IDENTIFIED BY 'Xingwen_2026';
 
 -- 3. 授予权限
@@ -46,100 +32,41 @@ GRANT ALL PRIVILEGES ON xingwen.* TO 'xingwen'@'%';
 FLUSH PRIVILEGES;
 ```
 
-### 3. 配置文件
+---
 
-复制 `.env.example` 为 `.env` 并根据实际环境修改：
+## 三、 后端部署 (Backend)
 
+### 1. 目录结构与环境
+假设项目代码位于 `/var/www/xingwen`，虚拟环境位于 `/var/www/zhangjing/backend/venv`。
+
+```bash
+cd /var/www/xingwen/backend/api
+# 创建并激活虚拟环境 (如已存在请跳过)
+python3 -m venv /var/www/zhangjing/backend/venv
+source /var/www/zhangjing/backend/venv/bin/activate
+
+# 强制安装所有依赖（包含兼容性补丁所需的库）
+pip install --upgrade pip
+pip install -r requirements.txt
+```
+
+### 2. 配置文件 (.env)
+复制并修改后端配置：
 ```bash
 cp .env.example .env
 ```
+**关键配置项**:
+- `DB_HOST`, `DB_USER`, `DB_PASSWORD`, `DB_NAME`: 填入上述 SQL 设置的信息。
+- `SECRET_KEY`: 生成一个随机长字符串。
+- `VITE_API_BASE_URL`: 设置为 `/api/v1` (前端相对路径)。
 
-重点修改项：
-
-- `DB_DRIVER`: 数据库驱动 (默认 mysql+aiomysql)
-- `DB_HOST`: MySQL 地址
-- `DB_USER`: 数据库用户名
-- `DB_PASSWORD`: 数据库密码
-- `DB_NAME`: 数据库名
-- `REDIS_HOST`: Redis 地址
-- `AI_API_KEY`: 大模型 API Key (Gemini/OpenAI 等)
-- `AI_BASE_URL`: API 代理地址 (如有)
-
-### 4. 初始化项目
-
-我们提供了一个一键初始化脚本，会自动运行迁移并注入初始数据：
-
+### 3. 初始化数据
 ```bash
 python init_project.py
 ```
 
-**注意**: 运行前请确保 MySQL 服务已启动且 `.env` 配置正确。
-
-### 5. 启动服务
-
-```bash
-uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
-```
-
-***
-
-## 三、 前端部署 (Frontend)
-
-项目包含两个前端工程：`admin` (管理后台) 和 `h5` (用户端)。
-
-### 1. 管理后台 (Admin)
-
-```bash
-cd frontend/admin
-cp .env.example .env
-npm install
-# 开发运行
-npm run dev
-# 生产构建
-npm run build
-```
-
-### 2. 用户端 (H5)
-
-```bash
-cd frontend/h5
-cp .env.example .env
-npm install
-# 开发运行
-npm run dev
-# 生产构建
-npm run build
-```
-
-***
-
-## 四、 Docker 部署 (推荐)
-
-如果您安装了 Docker 和 Docker Compose，可以使用一键部署方案：
-
-```bash
-# 在项目根目录运行
-docker-compose up -d
-```
-
-Docker Compose 会自动启动：
-
-- MySQL 数据库
-- Redis 缓存
-- Backend API 服务
-- Admin 管理后台 (Nginx 驱动)
-- H5 用户端 (Nginx 驱动)
-
-***
-
-## 五、 Nginx 生产环境配置 (推荐)
-
-在生产环境中，推荐使用 Nginx 作为反向代理和静态资源服务器。
-
-### 1. 后端 API (Systemd 服务)
-
+### 4. Systemd 服务配置
 创建 `/etc/systemd/system/xingwen-api.service`:
-
 ```ini
 [Unit]
 Description=Xingwen AI API Service
@@ -148,52 +75,75 @@ After=network.target
 [Service]
 User=root
 Group=root
-WorkingDirectory=/var/www/zhangjing/backend
+WorkingDirectory=/var/www/xingwen/backend/api
 Environment="PATH=/var/www/zhangjing/backend/venv/bin"
-# 确保在运行前激活环境并安装依赖：/var/www/zhangjing/backend/venv/bin/pip install -r requirements.txt
+# 使用 Gunicorn 配合 UvicornWorker，开启 4 个工作进程，监听 8641 端口
 ExecStart=/var/www/zhangjing/backend/venv/bin/gunicorn -w 4 -k uvicorn.workers.UvicornWorker app.main:app --bind 0.0.0.0:8641
 
 [Install]
 WantedBy=multi-user.target
 ```
+启动服务：`systemctl enable --now xingwen-api`
 
-### 2. Nginx 虚拟主机配置
+---
+
+## 四、 前端部署 (Frontend)
+
+### 1. 环境变量配置
+**注意**: 在生产环境下，必须使用相对路径。
+- **H5 端** (`frontend/h5/.env`): `VITE_API_BASE_URL=/api/v1`
+- **管理后台** (`frontend/admin/.env`): `VITE_API_BASE_URL=/api/v1`
+
+### 2. 编译构建
+```bash
+# H5 端
+cd /var/www/xingwen/frontend/h5
+npm install && npm run build
+
+# 管理后台 (已配置 base: '/admin/')
+cd /var/www/xingwen/frontend/admin
+npm install && npm run build
+```
+
+---
+
+## 五、 Nginx 配置 (核心)
 
 创建 `/etc/nginx/sites-available/xingwen`:
 
 ```nginx
 server {
     listen 80;
-    server_name yourdomain.com; # 替换为您的域名
+    server_name yourdomain.com; # 替换为实际域名
 
-    # H5 用户端
+    # 1. H5 用户端 (根目录)
     location / {
-        # 重要：请确保此路径与服务器上 index.html 的实际路径完全一致
-        root /var/www/xingwen/frontend/h5/dist; 
+        root /var/www/xingwen/frontend/h5/dist;
         index index.html;
-        # 修复死循环：如果找不到文件，尝试返回 index.html，如果还找不到则直接返回 404
         try_files $uri $uri/ /index.html;
     }
 
-    # 为 index.html 单独设置一个 location，防止内部重定向循环
+    # 专门防止 index.html 递归重定向
     location = /index.html {
         root /var/www/xingwen/frontend/h5/dist;
     }
 
-    # Admin 管理后台
+    # 2. Admin 管理后台 (子目录 /admin)
+    # 注意：需在 vite.config.ts 中配置 base: '/admin/'
     location /admin {
         alias /var/www/xingwen/frontend/admin/dist/;
         index index.html;
         try_files $uri $uri/ /admin/index.html;
     }
 
-    # 用户上传的静态资源
+    # 3. 静态上传资源 (手相图片)
     location /uploads {
         alias /var/www/xingwen/backend/api/uploads;
         expires 30d;
+        add_header Cache-Control "public";
     }
 
-    # 后端 API 反向代理
+    # 4. 后端 API 反向代理
     location /api {
         proxy_pass http://127.0.0.1:8641;
         proxy_set_header Host $host;
@@ -201,38 +151,29 @@ server {
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
     }
-
-    # 静态资源缓存 (可选)
-    location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg)$ {
-        expires 30d;
-        add_header Cache-Control "public, no-transform";
-    }
 }
 ```
+应用配置：`nginx -t && systemctl restart nginx`
 
-启用配置：
+---
 
-```bash
-ln -s /etc/nginx/sites-available/xingwen /etc/nginx/sites-enabled/
-nginx -t
-systemctl restart nginx
-```
+## 六、 部署常见问题排查 (FAQ)
 
-***
+### 1. 登录/密码报错: `AttributeError: module 'bcrypt' has no attribute '__about__'`
+- **原因**: `passlib` 与新版 `bcrypt` 不兼容。
+- **解决**: 已在 `app/core/security.py` 中通过 Monkeypatch 修复。请确保安装了 `bcrypt==4.0.1`。
 
-## 六、 初始账号信息
+### 2. 访问空白页/MIME 类型错误
+- **报错**: `Expected a JavaScript module script but the server responded with a MIME type of "text/html"`.
+- **解决**: 管理后台必须配置 `base: '/admin/'`，且 Nginx 的 `alias` 路径末尾必须带 `/`。
 
-- **管理后台**: `http://localhost:5173` (具体端口取决于开发环境或 Nginx 配置)
-- **默认管理员**: `admin`
-- **默认密码**: `admin123`
-- **测试卡密**: `XW12345678123456`
+### 3. Nginx 500 错误 (Internal Redirection Cycle)
+- **原因**: `root` 路径配置错误，导致 Nginx 找不到 `index.html`。
+- **解决**: 确认 `root` 路径指向包含 `index.html` 的 `dist` 目录，并赋予 `www-data` 访问权限：`chown -R www-data:www-data /var/www/xingwen`。
 
-***
+### 4. 后端报错: `ModuleNotFoundError: No module named 'jwt'` 或 `'aiomysql'`
+- **原因**: 虚拟环境未正确安装依赖。
+- **解决**: 使用全路径 pip 安装：`/path/to/venv/bin/pip install -r requirements.txt`。
 
-## 七、 常见问题 (FAQ)
-
-1. **字体显示为方块**: 检查后端 `app/assets/fonts` 是否缺失字体文件，或在 `.env` 中指定正确的路径。
-2. **API 404 错误**: 检查前端 `.env` 中的 `VITE_API_BASE_URL` 是否指向了正确的后端地址及端口。
-3. **数据库连接失败**: 确保 MySQL 允许远程连接或主机地址正确，且已通过 `init_project.py` 创建了数据库。
-4. **ModuleNotFoundError: No module named 'jwt'**: 确保执行了 `pip install -r requirements.txt`。如果使用了自定义路径的虚拟环境，请确保使用该路径下的 `pip` 进行安装。
-
+### 5. 前端编译警告: `Some chunks are larger than 500 kB`
+- **解决**: 已在 `vite.config.ts` 中配置 `manualChunks` 进行代码分割，将 `element-plus` 等大库独立打包。
