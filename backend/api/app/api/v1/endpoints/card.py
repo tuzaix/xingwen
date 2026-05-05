@@ -4,7 +4,7 @@ from sqlalchemy import select, func, and_
 from app.db.session import get_db
 from app.models.card import CardCode
 from app.models.report import Report
-from app.schemas.card import CardVerify, CardVerifyResponse, CardCreate, CardListResponse, CardMarkExport
+from app.schemas.card import CardVerify, CardVerifyResponse, CardCreate, CardListResponse, CardMarkExport, CardRemarkUpdate
 from app.api import deps
 from app.utils.card import generate_card_code
 from app.core import security
@@ -175,3 +175,31 @@ async def mark_cards_exported(
     )
     await db.commit()
     return {"message": f"Successfully marked {len(data.card_ids)} cards as exported"}
+
+@router.patch("/{card_id}/remark")
+async def update_card_remark(
+    card_id: int,
+    data: CardRemarkUpdate,
+    db: AsyncSession = Depends(get_db),
+    current_admin = Depends(deps.get_current_user)
+):
+    query = select(CardCode).where(CardCode.id == card_id)
+    result = await db.execute(query)
+    card = result.scalar_one_or_none()
+    
+    if not card:
+        raise HTTPException(status_code=404, detail="Card not found")
+        
+    # 如果该卡有批次号，则更新同批次所有卡的备注
+    if card.batch_no:
+        from sqlalchemy import update
+        await db.execute(
+            update(CardCode)
+            .where(CardCode.batch_no == card.batch_no)
+            .values(batch_remark=data.remark)
+        )
+    else:
+        card.batch_remark = data.remark
+        
+    await db.commit()
+    return {"message": "Remark updated successfully"}

@@ -70,7 +70,7 @@
 
       <!-- 数据表格 -->
       <el-table :data="tableData" v-loading="loading" row-key="id" hover stripe>
-        <el-table-column label="卡密编号" min-width="180">
+        <el-table-column label="卡密编号" width="220">
           <template #default="{ row }">
             <div class="code-wrapper">
               <span class="code-text">{{ formatCode(row.card_code) }}</span>
@@ -80,14 +80,14 @@
             </div>
           </template>
         </el-table-column>
-        <el-table-column prop="card_type" label="类型" width="80">
+        <el-table-column prop="card_type" label="类型" width="70">
           <template #default="{ row }">
             <el-tag :type="row.card_type === 'year' ? 'warning' : 'info'" effect="light">
               {{ typeMap[row.card_type] || row.card_type }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="status" label="状态" width="100">
+        <el-table-column prop="status" label="状态" width="90">
           <template #default="{ row }">
             <el-badge :type="statusMap[row.status].type" is-dot class="status-badge" />
             <span :class="'status-text text-' + statusMap[row.status].type">
@@ -95,7 +95,7 @@
             </span>
           </template>
         </el-table-column>
-        <el-table-column label="导出标记" width="100">
+        <el-table-column label="导出" width="90">
           <template #default="{ row }">
             <el-tag v-if="row.is_exported" type="info" size="small" effect="plain">已导出</el-tag>
             <el-tag v-else type="success" size="small" effect="plain">未导出</el-tag>
@@ -115,9 +115,18 @@
             <span v-else class="text-gray-400">-</span>
           </template>
         </el-table-column>
-        <el-table-column prop="batch_no" label="批次号" width="120" show-overflow-tooltip />
-        <el-table-column prop="batch_remark" label="批次备注" min-width="150" show-overflow-tooltip />
-        <el-table-column label="操作" fixed="right" width="120">
+        <el-table-column prop="batch_no" label="批次号" width="180" />
+        <el-table-column prop="batch_remark" label="批次备注" min-width="150" show-overflow-tooltip>
+          <template #default="{ row }">
+            <div class="remark-wrapper">
+              <span>{{ row.batch_remark || '-' }}</span>
+              <el-button link type="primary" size="small" class="edit-btn" @click="handleEditRemark(row)">
+                <el-icon><Edit /></el-icon>
+              </el-button>
+            </div>
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" fixed="right" width="110">
           <template #default="{ row }">
             <el-button link type="primary" @click="showDetail(row)">详情</el-button>
             <el-divider direction="vertical" />
@@ -213,8 +222,8 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
-import { ElMessage } from 'element-plus'
-import { Search, Plus, Download, CopyDocument, CollectionTag } from '@element-plus/icons-vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { Search, Plus, Download, CopyDocument, CollectionTag, Edit } from '@element-plus/icons-vue'
 import request from '../utils/request'
 import useClipboard from 'vue-clipboard3'
 
@@ -345,6 +354,24 @@ const handleRevoke = async (id: number) => {
   } catch (error) {
     console.error(error)
   }
+}
+
+const handleEditRemark = (row: any) => {
+  ElMessageBox.prompt('请输入新的批次备注', '编辑备注', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    inputValue: row.batch_remark,
+    inputPlaceholder: '批次备注说明',
+  }).then(async ({ value }) => {
+    try {
+      await request.patch(`/card/${row.id}/remark`, { remark: value })
+      ElMessage.success('备注更新成功')
+      handleSearch()
+    } catch (error) {
+      console.error(error)
+      ElMessage.error('更新失败')
+    }
+  }).catch(() => {})
 }
 
 const handleShowExport = () => {
@@ -485,7 +512,23 @@ onMounted(() => {
 .code-wrapper {
   display: flex;
   align-items: center;
+  gap: 4px;
+}
+
+.remark-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   gap: 8px;
+}
+
+.remark-wrapper .edit-btn {
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.remark-wrapper:hover .edit-btn {
+  opacity: 1;
 }
 
 .code-text {

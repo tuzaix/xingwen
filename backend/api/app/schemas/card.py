@@ -41,3 +41,6 @@ class CardListResponse(BaseModel):
 
 class CardMarkExport(BaseModel):
     card_ids: List[int]
+
+class CardRemarkUpdate(BaseModel):
+    remark: str
