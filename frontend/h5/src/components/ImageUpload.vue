@@ -7,7 +7,22 @@
       <div class="absolute inset-0 bg-amber-500/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
       
       <template v-if="!previewUrl">
-        <div class="flex flex-col items-center justify-center p-4">
+        <!-- Hand Guide Overlay -->
+        <div class="absolute inset-0 flex items-center justify-center p-8 pointer-events-none opacity-30">
+          <svg 
+            viewBox="0 0 24 24" 
+            class="w-full h-full text-amber-500"
+            :class="{ 'scale-x-[-1]': side === 'right' }"
+            fill="none" 
+            stroke="currentColor" 
+            stroke-width="0.5" 
+            stroke-dasharray="2 2"
+          >
+            <path d="M7 11.5V6a2 2 0 0 1 2-2 2 2 0 0 1 2 2v5.5m0 0V5a2 2 0 0 1 2-2 2 2 0 0 1 2 2v6.5m0 0V7a2 2 0 0 1 2-2 2 2 0 0 1 2 2v9a5 5 0 0 1-5 5H9.7a5 5 0 0 1-4.7-3.2L3.5 12" />
+          </svg>
+        </div>
+
+        <div class="flex flex-col items-center justify-center p-4 relative z-10">
           <div class="w-12 h-12 mb-3 flex items-center justify-center bg-amber-500/10 rounded-full text-amber-400 group-hover:scale-110 transition-transform">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
@@ -61,6 +76,7 @@ const props = defineProps<{
   subtitle: string
   initialImage?: string | null
   loading?: boolean
+  side?: 'left' | 'right'
 }>()
 
 const emit = defineEmits(['upload', 'clear'])

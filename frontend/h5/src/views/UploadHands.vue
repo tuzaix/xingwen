@@ -36,6 +36,7 @@
             <ImageUpload
               title="拍摄左手"
               subtitle="清晰对焦"
+              side="left"
               :initialImage="userStore.leftHandImage"
               @upload="(file, preview) => handleUpload('left', file, preview)"
               @clear="() => handleClear('left')"
@@ -51,6 +52,7 @@
             <ImageUpload
               title="拍摄右手"
               subtitle="均匀光线"
+              side="right"
               :initialImage="userStore.rightHandImage"
               @upload="(file, preview) => handleUpload('right', file, preview)"
               @clear="() => handleClear('right')"
