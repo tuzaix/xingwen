@@ -198,7 +198,12 @@ watch(() => props.show, async (newVal) => {
     if (shareCopySection && shareCopySection.paragraphs?.length > 0) {
       console.log('Found share_copy section, picking random paragraph')
       const paragraphs = shareCopySection.paragraphs
-      rawSummary = paragraphs[Math.floor(Math.random() * paragraphs.length)]
+      let selected = paragraphs[Math.floor(Math.random() * paragraphs.length)]
+      
+      // 去掉文案开头的关键词：【小红书玄学风】，【朋友圈走心风】，【高维数据炫耀风】
+      selected = selected.replace(/^【(小红书玄学风|朋友圈走心风|高维数据炫耀风)】[:：]?\s*/, '').trim()
+
+      rawSummary = selected
       
       // 限制分享文案长度，确保海报美观
       if (rawSummary.length > 150) {
