@@ -16,6 +16,8 @@ class CardCode(Base):
     expire_at = Column(DateTime, nullable=False)
     used_at = Column(DateTime)
     used_by = Column(String(64))  # User ID
+    is_exported = Column(SmallInteger, default=0) # 0: no, 1: yes
+    exported_at = Column(DateTime)
     created_by = Column(Integer, ForeignKey("admin_users.id"))
     created_at = Column(DateTime, server_default=func.now())
     channel = Column(String(50), index=True)  # Distribution channel

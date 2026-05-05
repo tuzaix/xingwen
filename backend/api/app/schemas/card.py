@@ -27,6 +27,8 @@ class CardInfo(BaseModel):
     status: int
     expire_at: datetime
     used_at: Optional[datetime] = None
+    is_exported: int = 0
+    exported_at: Optional[datetime] = None
     created_at: datetime
 
 class CardListResponse(BaseModel):
@@ -34,3 +36,6 @@ class CardListResponse(BaseModel):
     items: List[CardInfo]
     page: int
     page_size: int
+
+class CardMarkExport(BaseModel):
+    card_ids: List[int]

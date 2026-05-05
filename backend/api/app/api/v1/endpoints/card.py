@@ -4,7 +4,7 @@ from sqlalchemy import select, func, and_
 from app.db.session import get_db
 from app.models.card import CardCode
 from app.models.report import Report
-from app.schemas.card import CardVerify, CardVerifyResponse, CardCreate, CardListResponse
+from app.schemas.card import CardVerify, CardVerifyResponse, CardCreate, CardListResponse, CardMarkExport
 from app.api import deps
 from app.utils.card import generate_card_code
 from app.core import security
@@ -30,12 +30,15 @@ async def list_cards(
     page: int = Query(1, ge=1),
     page_size: int = Query(20, ge=1, le=100),
     status: Optional[int] = None,
+    is_exported: Optional[int] = None,
     batch_no: Optional[str] = None,
     card_code: Optional[str] = None
 ):
     query = select(CardCode)
     if status is not None:
         query = query.filter(CardCode.status == status)
+    if is_exported is not None:
+        query = query.filter(CardCode.is_exported == is_exported)
     if batch_no:
         query = query.filter(CardCode.batch_no.like(f"%{batch_no}%"))
     if card_code:
@@ -153,3 +156,18 @@ async def revoke_card(
     card.status = 3 # 3: 已作废
     await db.commit()
     return {"message": "卡密已成功作废"}
+
+@router.post("/mark-exported")
+async def mark_cards_exported(
+    data: CardMarkExport,
+    db: AsyncSession = Depends(get_db),
+    current_admin = Depends(deps.get_current_user)
+):
+    from sqlalchemy import update
+    await db.execute(
+        update(CardCode)
+        .where(CardCode.id.in_(data.card_ids))
+        .values(is_exported=1, exported_at=datetime.now())
+    )
+    await db.commit()
+    return {"message": f"Successfully marked {len(data.card_ids)} cards as exported"}

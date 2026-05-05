@@ -50,6 +50,10 @@
               <el-option label="已过期" :value="2" />
               <el-option label="已作废" :value="3" />
             </el-select>
+            <el-select v-model="queryParams.is_exported" placeholder="导出状态" class="status-select" clearable @change="handleSearch">
+              <el-option label="未导出" :value="0" />
+              <el-option label="已导出" :value="1" />
+            </el-select>
             <el-button type="primary" @click="handleSearch">查询</el-button>
           </div>
           <div class="header-right">
@@ -88,6 +92,12 @@
             <span :class="'status-text text-' + statusMap[row.status].type">
               {{ statusMap[row.status].label }}
             </span>
+          </template>
+        </el-table-column>
+        <el-table-column label="导出标记" width="100">
+          <template #default="{ row }">
+            <el-tag v-if="row.is_exported" type="info" size="small" effect="plain">已导出</el-tag>
+            <el-tag v-else type="success" size="small" effect="plain">未导出</el-tag>
           </template>
         </el-table-column>
         <el-table-column prop="expire_at" label="有效期" width="160">
@@ -227,6 +237,7 @@ const queryParams = reactive({
   page: 1,
   page_size: 20,
   status: 0,
+  is_exported: undefined,
   card_code: '',
   batch_no: ''
 })
@@ -337,7 +348,7 @@ const handleShowExport = () => {
   showExportDialog.value = true
 }
 
-const handleExport = () => {
+const handleExport = async () => {
   const headers = ['卡密', '直达链接', '批次号', '类型', '状态', '有效期至']
   const rows = tableData.value.map((item: any) => {
     const link = `${exportConfig.baseUrl.replace(/\/$/, '')}/?card_code=${item.card_code}`
@@ -376,8 +387,19 @@ const handleExport = () => {
   document.body.appendChild(link)
   link.click()
   document.body.removeChild(link)
+  
+  // 标记为已导出
+  try {
+    const cardIds = tableData.value.map((item: any) => item.id)
+    await request.post('/card/mark-exported', { card_ids: cardIds })
+    ElMessage.success('导出并标记成功')
+    handleSearch() // 刷新列表显示导出状态
+  } catch (error) {
+    console.error('Failed to mark cards as exported:', error)
+    ElMessage.error('导出成功，但标记状态失败')
+  }
+
   showExportDialog.value = false
-  ElMessage.success('导出成功')
 }
 
 const showDetail = (row: any) => {
