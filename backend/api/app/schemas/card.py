@@ -16,6 +16,7 @@ class CardCreate(BaseModel):
     card_type: str
     valid_days: int
     channel: str = "official"
+    remark: Optional[str] = None
 
 class CardInfo(BaseModel):
     model_config = ConfigDict(from_attributes=True)
@@ -29,6 +30,7 @@ class CardInfo(BaseModel):
     used_at: Optional[datetime] = None
     is_exported: int = 0
     exported_at: Optional[datetime] = None
+    batch_remark: Optional[str] = None
     created_at: datetime
 
 class CardListResponse(BaseModel):

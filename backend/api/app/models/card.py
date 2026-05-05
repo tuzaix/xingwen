@@ -21,3 +21,4 @@ class CardCode(Base):
     created_by = Column(Integer, ForeignKey("admin_users.id"))
     created_at = Column(DateTime, server_default=func.now())
     channel = Column(String(50), index=True)  # Distribution channel
+    batch_remark = Column(String(200))        # Remark for this batch

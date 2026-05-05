@@ -44,6 +44,7 @@
                 :value="item"
               />
             </el-select>
+            <el-input v-model="queryParams.batch_remark" placeholder="备注搜索" class="search-input" clearable @keyup.enter="handleSearch" />
             <el-select v-model="queryParams.status" placeholder="所有状态" class="status-select" clearable @change="handleSearch">
               <el-option label="未使用" :value="0" />
               <el-option label="已使用" :value="1" />
@@ -79,7 +80,7 @@
             </div>
           </template>
         </el-table-column>
-        <el-table-column prop="card_type" label="类型" width="100">
+        <el-table-column prop="card_type" label="类型" width="80">
           <template #default="{ row }">
             <el-tag :type="row.card_type === 'year' ? 'warning' : 'info'" effect="light">
               {{ typeMap[row.card_type] || row.card_type }}
@@ -114,7 +115,8 @@
             <span v-else class="text-gray-400">-</span>
           </template>
         </el-table-column>
-        <el-table-column prop="batch_no" label="批次" width="150" show-overflow-tooltip />
+        <el-table-column prop="batch_no" label="批次号" width="120" show-overflow-tooltip />
+        <el-table-column prop="batch_remark" label="批次备注" min-width="150" show-overflow-tooltip />
         <el-table-column label="操作" fixed="right" width="120">
           <template #default="{ row }">
             <el-button link type="primary" @click="showDetail(row)">详情</el-button>
@@ -172,6 +174,9 @@
         </el-form-item>
         <el-form-item label="渠道备注">
           <el-input v-model="generateForm.channel" placeholder="如：官方渠道、某代销商" />
+        </el-form-item>
+        <el-form-item label="批次备注">
+          <el-input v-model="generateForm.remark" type="textarea" placeholder="请输入本批次卡密的说明（可选）" />
         </el-form-item>
       </el-form>
       <template #footer>
@@ -239,14 +244,16 @@ const queryParams = reactive({
   status: 0,
   is_exported: undefined,
   card_code: '',
-  batch_no: ''
+  batch_no: '',
+  batch_remark: ''
 })
 
 const generateForm = reactive({
   count: 100,
   card_type: 'once',
   valid_days: 365,
-  channel: 'official'
+  channel: 'official',
+  remark: ''
 })
 
 const typeMap: any = {

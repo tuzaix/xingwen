@@ -32,6 +32,7 @@ async def list_cards(
     status: Optional[int] = None,
     is_exported: Optional[int] = None,
     batch_no: Optional[str] = None,
+    batch_remark: Optional[str] = None,
     card_code: Optional[str] = None
 ):
     query = select(CardCode)
@@ -40,7 +41,9 @@ async def list_cards(
     if is_exported is not None:
         query = query.filter(CardCode.is_exported == is_exported)
     if batch_no:
-        query = query.filter(CardCode.batch_no.like(f"%{batch_no}%"))
+        query = query.filter(CardCode.batch_no == batch_no)
+    if batch_remark:
+        query = query.filter(CardCode.batch_remark.like(f"%{batch_remark}%"))
     if card_code:
         query = query.filter(CardCode.card_code.like(f"%{card_code.upper().replace('-', '')}%"))
     
@@ -86,7 +89,8 @@ async def generate_cards(
             status=0,
             expire_at=expire_at,
             created_by=current_admin.id,
-            channel=data.channel
+            channel=data.channel,
+            batch_remark=data.remark
         )
         db.add(new_card)
         new_cards.append(new_card)
