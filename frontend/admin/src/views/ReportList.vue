@@ -143,18 +143,28 @@
                 </div>
                 
                 <div class="info-card">
-                  <div class="card-label"><el-icon><Location /></el-icon> 所属地区</div>
+                  <div class="card-label"><el-icon><Location /></el-icon> 出生地</div>
+                  <div class="card-value">{{ currentReport.birth_place || '未知' }}</div>
+                </div>
+
+                <div class="info-card">
+                  <div class="card-label"><el-icon><Compass /></el-icon> 现居城市</div>
                   <div class="card-value">{{ currentReport.location || '未知' }}</div>
                 </div>
                 
                 <div class="info-card">
-                  <div class="card-label"><el-icon><Compass /></el-icon> 生肖星座</div>
+                  <div class="card-label"><el-icon><Star /></el-icon> 生肖星座</div>
                   <div class="card-value">{{ currentReport.zodiac || '未知' }}</div>
                 </div>
 
                 <div class="info-card">
                   <div class="card-label"><el-icon><MagicStick /></el-icon> 生辰八字</div>
                   <div class="card-value bazi-value">{{ currentReport.bazi || '解析中...' }}</div>
+                </div>
+
+                <div class="info-card full-row intention-card">
+                  <div class="card-label"><el-icon><ChatDotRound /></el-icon> 个人诉求</div>
+                  <div class="card-value intention-text">{{ currentReport.core_intention || '暂无特定诉求' }}</div>
                 </div>
 
                 <div class="info-card full-row">
@@ -388,7 +398,9 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { 
   User, Loading, Download, View, 
   Delete, ArrowDown, Printer, CopyDocument,
-  CircleClose
+  CircleClose, Location, Compass, Calendar,
+  MagicStick, ChatLineRound, Key, ElementPlus,
+  Star, ChatDotRound
 } from '@element-plus/icons-vue'
 import request from '../utils/request'
 import { marked } from 'marked'
@@ -824,6 +836,18 @@ onMounted(() => {
 .highlight-value {
   color: #b45309;
   font-size: 18px;
+}
+
+.intention-card {
+  background: linear-gradient(to right, rgba(99, 102, 241, 0.05), transparent) !important;
+  border-left: 3px solid #6366f1 !important;
+}
+
+.intention-text {
+  color: #475569;
+  font-style: italic;
+  font-weight: 500;
+  line-height: 1.6;
 }
 
 .calendar-tag-mini {

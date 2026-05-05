@@ -341,6 +341,16 @@ async def download_report_pdf(
             else:
                 birthday_str = report.birthday.strftime("%Y-%m-%d %H:%M")
 
+        # 过滤掉附录/分享文案部分，不展示在 PDF 中
+        display_sections = []
+        if report.sections:
+            display_sections = [
+                s for s in report.sections 
+                if s.get('chapter_id') != 'share_copy' and 
+                '分享文案' not in s.get('chapter_title', '') and 
+                '附录' not in s.get('chapter_title', '')
+            ]
+
         report_data = {
             "user_name": report.user_name,
             "gender": report.gender,
@@ -348,7 +358,7 @@ async def download_report_pdf(
             "focus_area": report.focus_area,
             "bazi": report.bazi,
             "bazi_favorable_elements": report.bazi_favorable_elements,
-            "sections": report.sections,
+            "sections": display_sections,
             "content": report.content
         }
         

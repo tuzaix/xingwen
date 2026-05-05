@@ -129,6 +129,7 @@ const props = defineProps<{
   gender: string
   birthday: string
   reportContent: string
+  sections?: any[]
 }>()
 
 const emit = defineEmits(['update:show'])
@@ -190,17 +191,31 @@ watch(() => props.show, async (newVal) => {
   if (newVal) {
     generating.value = true
     
-    // Ensure summary is updated
-    if (props.reportContent) {
-      let rawSummary = extractSummary(props.reportContent)
-      // 对 summary 中的人名进行脱敏处理
-      if (props.name && rawSummary.includes(props.name)) {
-        rawSummary = rawSummary.split(props.name).join(maskedName.value)
+    // 尝试从附录文案中随机挑选一条
+    let rawSummary = ''
+    const shareCopySection = props.sections?.find(s => s.chapter_id === 'share_copy' || s.chapter_title?.includes('分享文案') || s.chapter_title?.includes('附录'))
+    
+    if (shareCopySection && shareCopySection.paragraphs?.length > 0) {
+      console.log('Found share_copy section, picking random paragraph')
+      const paragraphs = shareCopySection.paragraphs
+      rawSummary = paragraphs[Math.floor(Math.random() * paragraphs.length)]
+      
+      // 限制分享文案长度，确保海报美观
+      if (rawSummary.length > 150) {
+        rawSummary = rawSummary.substring(0, 145) + '...'
       }
-      summary.value = rawSummary
+    } else if (props.reportContent) {
+      // 兜底逻辑：从报告正文中提取
+      rawSummary = extractSummary(props.reportContent)
     } else {
-      summary.value = '星辰已为您指引方向，命格深处蕴含着无限可能。'
+      rawSummary = '星辰已为您指引方向，命格深处蕴含着无限可能。'
     }
+
+    // 对 summary 中的人名进行脱敏处理
+    if (props.name && rawSummary.includes(props.name)) {
+      rawSummary = rawSummary.split(props.name).join(maskedName.value)
+    }
+    summary.value = rawSummary
     
     console.log('Generating poster with summary:', summary.value)
     

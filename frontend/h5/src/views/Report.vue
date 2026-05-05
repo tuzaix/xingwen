@@ -175,6 +175,7 @@
       :gender="userStore.gender"
       :birthday="`${userStore.birthday} ${userStore.birthTime}`"
       :reportContent="report?.content || ''"
+      :sections="report?.sections || []"
     />
   </div>
 </template>
@@ -492,7 +493,13 @@ const pollStatus = async (id: string) => {
       // 优先使用后端提供的结构化数据
       if (res.data.sections && Array.isArray(res.data.sections) && res.data.sections.length > 0) {
         console.log('Using structured sections from backend')
-        sections.value = res.data.sections.map((s: any, i: number) => ({
+        // 过滤掉附录/分享文案部分，不展示在页面上
+        const filteredSections = res.data.sections.filter((s: any) => 
+          s.chapter_id !== 'share_copy' && 
+          !s.chapter_title?.includes('分享文案') && 
+          !s.chapter_title?.includes('附录')
+        )
+        sections.value = filteredSections.map((s: any, i: number) => ({
           ...s,
           expanded: i < 2
         }))
