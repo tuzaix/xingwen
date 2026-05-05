@@ -112,11 +112,12 @@ class AstrologyAgent(AIAgentBase):
 实时天象/月相：{astronomy_desc}
 用户姓名：{user_info['name']}
 用户性别：{user_info['gender']}
+出生地：{user_info.get('birth_place', '未知')}
 出生日期：{user_info['birthday']}
 西方星盘/星座/MBTI：{user_info.get('zodiac', '未知')} / {user_info.get('mbti', '未知')}
 生辰八字：{user_info.get('bazi', '未知')}
 八字喜用神：{user_info.get('bazi_favorable_elements', '未知')}
-当下核心诉求（求测心念）：{user_info['focus_area']}
+当下核心诉求（求测心念）：{user_info.get('core_intention', user_info.get('focus_area', '未知'))}
 {features_text}
 """
         

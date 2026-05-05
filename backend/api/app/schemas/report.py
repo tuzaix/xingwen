@@ -6,7 +6,9 @@ class ReportCreate(BaseModel):
     name: str
     gender: str
     birthday: str
+    birth_place: Optional[str] = None
     focus_area: str
+    core_intention: Optional[str] = None
     location: Optional[str] = None
     mbti: Optional[str] = None
     calendar_type: Optional[str] = "gregorian" # gregorian or lunar
@@ -28,7 +30,9 @@ class ReportResponse(BaseModel):
     user_name: Optional[str] = None
     gender: Optional[str] = None
     birthday: Optional[datetime] = None
+    birth_place: Optional[str] = None
     focus_area: Optional[str] = None
+    core_intention: Optional[str] = None
     location: Optional[str] = None
     mbti: Optional[str] = None
     calendar_type: Optional[str] = None

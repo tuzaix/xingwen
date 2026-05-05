@@ -171,7 +171,62 @@
           </div>
         </div>
 
-        <!-- 5. 所在城市 -->
+        <!-- 5. 出生地 -->
+        <div class="form-item">
+          <label class="block text-xs font-bold text-amber-500/50 mb-3 uppercase tracking-widest">
+            您的出生地 <span class="text-amber-500">*</span>
+          </label>
+          <div class="grid grid-cols-3 gap-2">
+            <div class="relative">
+              <select
+                v-model="birthPlaceState.province"
+                @change="handleBirthProvinceChange"
+                class="w-full bg-slate-800/50 border border-slate-700 rounded-xl py-4 px-3 focus:border-amber-500/50 outline-none transition-all text-white appearance-none text-xs"
+              >
+                <option value="">省份</option>
+                <option v-for="p in cityData" :key="p.name" :value="p.name">{{ p.name }}</option>
+              </select>
+              <div class="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-slate-600">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                </svg>
+              </div>
+            </div>
+            <div class="relative">
+              <select
+                v-model="birthPlaceState.city"
+                @change="handleBirthCityChange"
+                class="w-full bg-slate-800/50 border border-slate-700 rounded-xl py-4 px-3 focus:border-amber-500/50 outline-none transition-all text-white appearance-none text-xs"
+                :disabled="!birthPlaceState.province"
+              >
+                <option value="">城市</option>
+                <option v-for="c in birthAvailableCities" :key="c.name" :value="c.name">{{ c.name }}</option>
+              </select>
+              <div class="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-slate-600">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                </svg>
+              </div>
+            </div>
+            <div class="relative">
+              <select
+                v-model="birthPlaceState.district"
+                class="w-full bg-slate-800/50 border border-slate-700 rounded-xl py-4 px-3 focus:border-amber-500/50 outline-none transition-all text-white appearance-none text-xs"
+                :disabled="!birthPlaceState.city"
+              >
+                <option value="">区/县</option>
+                <option v-for="d in birthAvailableDistricts" :key="d.name" :value="d.name">{{ d.name }}</option>
+              </select>
+              <div class="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-slate-600">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 6. 所在城市 -->
         <div class="form-item">
           <label class="block text-xs font-bold text-amber-500/50 mb-3 uppercase tracking-widest">
             当前所在城市 <span class="text-amber-500">*</span>
@@ -272,20 +327,46 @@
           </div>
         </div>
 
-        <!-- 8. 此刻最想探寻的方向 -->
+        <!-- 8. 此刻最想探寻的方向与心念 -->
         <div class="form-item">
-          <label class="block text-xs font-bold text-amber-500/50 mb-3 uppercase tracking-widest">此刻最想探寻的方向</label>
-          <div class="grid grid-cols-2 gap-3">
+          <label class="block text-xs font-bold text-amber-500/50 mb-3 uppercase tracking-widest">
+            此刻最想探寻的方向 <span class="text-amber-500">*</span>
+          </label>
+          <div class="grid grid-cols-2 gap-3 mb-4">
             <button
               v-for="area in areas"
               :key="area"
               @click="form.focusArea = area"
-              class="py-3 px-2 rounded-xl border text-sm transition-all"
+              class="py-3 px-2 rounded-xl border text-sm transition-all font-bold"
               :class="form.focusArea === area ? 'border-amber-500 bg-amber-500/10 text-amber-400' : 'border-slate-700 bg-slate-800/50 text-slate-500'"
             >
               {{ area }}
             </button>
           </div>
+          
+          <label class="block text-xs font-bold text-amber-500/50 mb-3 uppercase tracking-widest">
+            求测心念 (选择或输入您的困惑)
+          </label>
+          
+          <!-- 预设选项 -->
+          <div class="flex flex-wrap gap-2 mb-4">
+            <button
+              v-for="opt in intentionOptions"
+              :key="opt"
+              @click="selectIntention(opt)"
+              class="px-3 py-2 rounded-lg border text-[11px] transition-all"
+              :class="form.coreIntention === opt ? 'border-amber-500 bg-amber-500/10 text-amber-400' : 'border-slate-700 bg-slate-800/30 text-slate-500'"
+            >
+              {{ opt }}
+            </button>
+          </div>
+
+          <textarea
+            v-model="form.coreIntention"
+            placeholder="也可在此直接描述您的具体困惑..."
+            rows="3"
+            class="w-full bg-slate-800/50 border border-slate-700 rounded-xl py-4 px-5 focus:border-amber-500/50 outline-none transition-all text-white placeholder:text-slate-600 text-sm resize-none"
+          ></textarea>
         </div>
       </div>
     </div>
@@ -320,6 +401,22 @@ const userStore = useUserStore()
 
 const areas = ['情感姻缘', '事业发展', '财富运势', '自我成长']
 const zodiacs = ['白羊座', '金牛座', '双子座', '巨蟹座', '狮子座', '处女座', '天秤座', '天蝎座', '射手座', '摩羯座', '水瓶座', '双鱼座']
+
+// 预设的核心诉求选项
+const intentionOptions = computed(() => {
+  const options: Record<string, string[]> = {
+    '情感姻缘': ['何时遇到正缘？', '对方是否值得托付？', '近期感情会有波动吗？', '如何修复当前关系？'],
+    '事业发展': ['近期有升职加薪机会吗？', '现在适合跳槽吗？', '创业前景如何？', '职场人际关系怎么处理？'],
+    '财富运势': ['财运什么时候爆发？', '适合进行大额投资吗？', '会有意外之财吗？', '如何守住现有财富？'],
+    '自我成长': ['我的天赋潜能在哪里？', '如何克服性格弱点？', '目前的状态该如何突破？', '未来的发展重心在哪？'],
+    '综合运势': ['未来三个月的整体运势', '今年的关键转折点', '需要注意的风险和机遇', '提升运势的有效方法']
+  }
+  return options[form.focusArea] || options['综合运势']
+})
+
+const selectIntention = (option: string) => {
+  form.coreIntention = option
+}
 
 const handleCalendarTypeChange = (newType: 'gregorian' | 'lunar') => {
   if (form.calendarType === newType) return
@@ -356,6 +453,12 @@ const locationState = reactive({
   district: ''
 })
 
+const birthPlaceState = reactive({
+  province: '',
+  city: '',
+  district: ''
+})
+
 onMounted(() => {
   calculateZodiac()
   if (userStore.location) {
@@ -366,17 +469,32 @@ onMounted(() => {
       locationState.district = parts[2]
     }
   }
+  if (userStore.birthPlace) {
+    const parts = userStore.birthPlace.split(' ')
+    if (parts.length >= 3) {
+      birthPlaceState.province = parts[0]
+      birthPlaceState.city = parts[1]
+      birthPlaceState.district = parts[2]
+    }
+  }
 })
 
-const availableCities = computed(() => {
-  const p = cityData.find(p => p.name === locationState.province)
+const getCities = (provinceName: string) => {
+  const p = cityData.find(p => p.name === provinceName)
   return p ? p.children : []
-})
+}
 
-const availableDistricts = computed(() => {
-  const c = availableCities.value.find(c => c.name === locationState.city)
+const getDistricts = (provinceName: string, cityName: string) => {
+  const cities = getCities(provinceName)
+  const c = cities.find(c => c.name === cityName)
   return c ? c.children : []
-})
+}
+
+const availableCities = computed(() => getCities(locationState.province))
+const availableDistricts = computed(() => getDistricts(locationState.province, locationState.city))
+
+const birthAvailableCities = computed(() => getCities(birthPlaceState.province))
+const birthAvailableDistricts = computed(() => getDistricts(birthPlaceState.province, birthPlaceState.city))
 
 const handleProvinceChange = () => {
   locationState.city = ''
@@ -385,6 +503,15 @@ const handleProvinceChange = () => {
 
 const handleCityChange = () => {
   locationState.district = ''
+}
+
+const handleBirthProvinceChange = () => {
+  birthPlaceState.city = ''
+  birthPlaceState.district = ''
+}
+
+const handleBirthCityChange = () => {
+  birthPlaceState.district = ''
 }
 
 // Split date logic
@@ -447,7 +574,9 @@ const form = reactive({
   gender: userStore.gender || '女',
   birthday: userStore.birthday,
   birthTime: userStore.birthTime || '',
-  focusArea: userStore.focusArea || '情感姻缘',
+  birthPlace: userStore.birthPlace,
+  focusArea: userStore.focusArea || '综合运势',
+  coreIntention: userStore.coreIntention || '',
   location: userStore.location,
   mbti: userStore.mbti,
   calendarType: userStore.calendarType || 'gregorian',
@@ -519,6 +648,15 @@ watch(locationState, (newVal) => {
   }
 })
 
+// Watch birthPlaceState to update form.birthPlace
+watch(birthPlaceState, (newVal) => {
+  if (newVal.province && newVal.city && newVal.district) {
+    form.birthPlace = `${newVal.province} ${newVal.city} ${newVal.district}`
+  } else {
+    form.birthPlace = ''
+  }
+})
+
 // Sync birthDate to form.birthday
 watch(birthDate, (newVal) => {
   const y = newVal.year
@@ -535,7 +673,12 @@ watch(birthTimeState, (newVal) => {
 })
 
 const isFormValid = computed(() => {
-  return form.name.trim() !== '' && form.birthday !== '' && form.location !== '' && form.zodiac !== ''
+  return form.name.trim() !== '' && 
+         form.birthday !== '' && 
+         form.location !== '' && 
+         form.birthPlace !== '' &&
+         form.zodiac !== '' &&
+         form.coreIntention.trim() !== ''
 })
 
 const nextStep = () => {

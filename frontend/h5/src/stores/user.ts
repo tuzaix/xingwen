@@ -5,7 +5,9 @@ interface UserState {
   gender: string
   birthday: string
   birthTime: string
+  birthPlace: string
   focusArea: string
+  coreIntention: string
   leftHandImage: string | null // 这将存储本地预览 URL 或服务器返回的文件名
   rightHandImage: string | null
   leftHandFile: File | null // 新增：存储原始文件对象，不持久化
@@ -25,7 +27,9 @@ export const useUserStore = defineStore('user', {
     gender: '女',
     birthday: '',
     birthTime: '12:00',
-    focusArea: '情感姻缘',
+    birthPlace: '',
+    focusArea: '综合运势',
+    coreIntention: '',
     leftHandImage: null,
     rightHandImage: null,
     leftHandFile: null,

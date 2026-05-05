@@ -10,7 +10,9 @@ class Report(Base):
     user_name = Column(String(50))
     gender = Column(String(10))
     birthday = Column(DateTime)
+    birth_place = Column(String(100)) # 出生地
     focus_area = Column(String(50))  # 情感/事业/财富
+    core_intention = Column(String(200)) # 求测心念
     location = Column(String(100))
     mbti = Column(String(10))
     calendar_type = Column(String(20), default="gregorian")
