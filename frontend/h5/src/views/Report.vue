@@ -201,6 +201,8 @@ const error = ref('')
 const currentProgress = ref(0)
 const currentStatusText = ref('正在连接星辰...')
 const showPoster = ref(false)
+const MIN_LOADING_TIME = 20000 // 20 seconds ritual delay
+const startTime = ref(Date.now())
 
 const sections = ref<any[]>([])
 
@@ -431,6 +433,9 @@ const uploadImages = async () => {
 }
 
 const generateReport = async () => {
+  // 重置启动时间，开始计算仪式感延迟
+  startTime.value = Date.now()
+  
   // 检查必要数据是否存在
   if (!userStore.leftHandImage || !userStore.rightHandImage || !userStore.cardCode) {
     error.value = '检测到信息不完整，请重新上传手相并验证卡密。'
@@ -508,12 +513,27 @@ const pollStatus = async (id: string) => {
         sections.value = parseSections(res.data.content)
       }
       
-      loading.value = false
       reportStore.setReport(id, res.data.content)
+
+      // 仪式感延迟：即使生成完成，也至少等待 MIN_LOADING_TIME
+      const elapsed = Date.now() - startTime.value
+      const remaining = Math.max(0, MIN_LOADING_TIME - elapsed)
       
-      // If we are currently on the 'loading' route, replace history with the actual report ID
-      if (route.params.id === 'loading') {
-        router.replace(`/report/${id}`)
+      if (remaining > 0) {
+        currentStatusText.value = '星辰指引已现，正在整合天机...'
+        setTimeout(() => {
+          loading.value = false
+          // If we are currently on the 'loading' route, replace history with the actual report ID
+          if (route.params.id === 'loading') {
+            router.replace(`/report/${id}`)
+          }
+        }, remaining)
+      } else {
+        loading.value = false
+        // If we are currently on the 'loading' route, replace history with the actual report ID
+        if (route.params.id === 'loading') {
+          router.replace(`/report/${id}`)
+        }
       }
     } else if (res.data.status === 2) {
       error.value = res.data.error_msg || 'AI 解析失败'
