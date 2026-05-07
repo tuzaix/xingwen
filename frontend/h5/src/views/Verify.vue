@@ -131,21 +131,10 @@ watch(cardCode, async (newVal) => {
 const validateCard = async (code: string) => {
   loading.value = true
   errorMsg.value = ''
-  
-  // 增加 1.2 秒的人为延迟，让校验更有仪式感
-  const start = Date.now()
-  
   try {
     const res = await axios.post('/card/verify', { card_code: code }, {
       baseURL: import.meta.env.VITE_API_BASE_URL || '/api/v1'
     })
-    
-    // 等待至少 1.2 秒
-    const elapsed = Date.now() - start
-    if (elapsed < 1200) {
-      await new Promise(resolve => setTimeout(resolve, 1200 - elapsed))
-    }
-
     if (res.data.valid) {
       isValidated.value = true
       userStore.setUserInfo({ cardCode: code })

@@ -62,45 +62,29 @@ const props = defineProps<{
 }>()
 
 const displayProgress = ref(0)
-const currentText = ref('正在连接阿卡西记录...')
+const currentText = ref('正在读取先天命格...')
 const texts = [
-  '正在连接阿卡西记录...',
-  '正在读取先天命格数据...',
-  '正在扫描双手镜像特征...',
-  '正在进行时空交叉比对...',
-  '正在计算地磁场匹配度...',
-  '正在同步星辰能量轨迹...',
-  '正在解析生辰八字磁场...',
-  '正在汇聚全息推演结果...',
-  '正在撰写深度命理报告...',
-  '天机即将显现...'
-]
-
-const ritualTexts = [
-  '星辰指引已现，正在整合天机...',
-  '命理画卷已绘就，正在加盖星印...',
-  '正在同步现实维度，请稍候...',
-  '万事俱备，开启命运之门...'
+  '正在读取先天命格...',
+  '同步后天运势轨迹...',
+  '跨越阿卡西记录...',
+  '汇聚星辰能量...',
+  '正在生成深度解析报告...',
+  '即将为您呈现结果...'
 ]
 
 let textInterval: any
 let fakeProgressInterval: any
-let ritualIndex = 0
 
 onMounted(() => {
   let textIndex = 0
   textInterval = setInterval(() => {
-    if (props.progress === 100) {
-      // 当报告生成完成进入仪式延迟阶段，使用特殊的收尾文案
-      currentText.value = ritualTexts[ritualIndex % ritualTexts.length]
-      ritualIndex++
-    } else if (!props.statusText) {
+    if (!props.statusText) {
       textIndex = (textIndex + 1) % texts.length
       currentText.value = texts[textIndex]
     } else {
       currentText.value = props.statusText
     }
-  }, 2500)
+  }, 2000)
 
   fakeProgressInterval = setInterval(() => {
     if (props.progress !== undefined) {

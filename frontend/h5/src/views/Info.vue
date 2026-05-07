@@ -374,18 +374,14 @@
     <div class="mt-8 pb-8 relative z-10">
       <button
         @click="nextStep"
-        :disabled="!isFormValid || loading"
+        :disabled="!isFormValid"
         class="w-full py-4 rounded-xl font-bold transition-all flex items-center justify-center gap-2"
         :class="isFormValid 
           ? 'bg-gradient-to-r from-amber-400 to-amber-600 text-slate-900 shadow-[0_0_20px_rgba(251,191,36,0.2)]' 
           : 'bg-slate-800 text-slate-500 cursor-not-allowed'"
       >
-        <svg v-if="loading" class="animate-spin h-5 w-5 text-slate-900" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-        </svg>
-        {{ loading ? '同步星辰能量...' : '下一步：上传手相' }}
-        <svg v-if="isFormValid && !loading" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+        下一步：上传手相
+        <svg v-if="isFormValid" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
           <path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd" />
         </svg>
       </button>
@@ -394,7 +390,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, watch, onMounted } from 'vue'
+import { reactive, computed, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '../stores/user'
 import cityData from '../assets/city-data.json'
@@ -402,8 +398,6 @@ import { Solar, Lunar } from 'lunar-javascript'
 
 const router = useRouter()
 const userStore = useUserStore()
-
-const loading = ref(false)
 
 const areas = ['情感姻缘', '事业发展', '财富运势', '自我成长']
 const zodiacs = ['白羊座', '金牛座', '双子座', '巨蟹座', '狮子座', '处女座', '天秤座', '天蝎座', '射手座', '摩羯座', '水瓶座', '双鱼座']
@@ -687,16 +681,10 @@ const isFormValid = computed(() => {
          form.coreIntention.trim() !== ''
 })
 
-const nextStep = async () => {
+const nextStep = () => {
   if (isFormValid.value) {
-    loading.value = true
     userStore.setUserInfo(form)
     userStore.zodiac = form.zodiac
-    
-    // 增加 800ms 仪式感延迟
-    await new Promise(resolve => setTimeout(resolve, 800))
-    
-    loading.value = false
     router.push('/verify')
   }
 }
