@@ -164,12 +164,8 @@ const validateCard = async (code: string) => {
   }
 }
 
-const startAnalysis = async () => {
+const startAnalysis = () => {
   if (isValidated.value) {
-    loading.value = true
-    // 增加 800ms 仪式感延迟
-    await new Promise(resolve => setTimeout(resolve, 800))
-    loading.value = false
     router.replace('/report/loading')
   }
 }
